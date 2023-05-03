@@ -1,0 +1,6 @@
+clang+llvm
+.cache/
+.clangd/
+build/
+__pycache__/
+compile_commands.json

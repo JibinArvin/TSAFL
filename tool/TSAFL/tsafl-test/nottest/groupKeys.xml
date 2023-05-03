@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ROOTNODE>
+	<KEY keyName="lock.c:12" Number="6">
+		<VALUE valueName="lock.c:13" Number="2"/>
+		<VALUE valueName="lock.c:14" Number="3"/>
+	</KEY>
+	<KEY keyName="lock.c:21" Number="12"/>
+	<KEY keyName="lock.c:23" Number="7">
+		<VALUE valueName="lock.c:24" Number="8"/>
+	</KEY>
+	<KEY keyName="lock.c:26" Number="9"/>
+	<KEY keyName="lock.c:27" Number="13"/>
+	<KEY keyName="lock.c:30" Number="14">
+		<VALUE valueName="lock.c:31" Number="10"/>
+		<VALUE valueName="lock.c:32" Number="11"/>
+	</KEY>
+	<KEY keyName="lock.c:6" Number="4">
+		<VALUE valueName="lock.c:7" Number="0"/>
+		<VALUE valueName="lock.c:8" Number="1"/>
+	</KEY>
+	<KEY keyName="lock.c:9" Number="5"/>
+</ROOTNODE>

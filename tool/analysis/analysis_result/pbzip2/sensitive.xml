@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?><ROOTNODE>
+  <Value VName="19">
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:605" count="0" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:606" count="1" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:607" count="2" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:1078" count="3" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:971" count="9" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:980" count="13" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:984" count="16" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:986" count="17" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:989" count="18" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:993" count="20" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:995" count="21" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:176" count="33" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:188" count="35" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:801" count="44" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:201" count="60" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:1055" count="63" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:1060" count="65" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:1015" count="66" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:1016" count="67" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:1036" count="71" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:214" count="73" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:226" count="74" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:1741" count="205" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:1742" count="206" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:1770" count="209" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:1801" count="219" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="pbzip2.cpp:1802" count="220" loop="0"/>
+   <OPERATION tochMemLoc="19" actionType="read" sourceLoc="ErrorContext.cpp:27" count="223" loop="0"/>
+  </Value>
+  <Value VName="26">
+   <OPERATION tochMemLoc="26" actionType="read" sourceLoc="pbzip2.cpp:964" count="5" loop="0"/>
+   <OPERATION tochMemLoc="26" actionType="read" sourceLoc="pbzip2.cpp:976" count="11" loop="0"/>
+  </Value>
+  <Value VName="28">
+   <OPERATION tochMemLoc="28" actionType="read" sourceLoc="pbzip2.cpp:964" count="6" loop="0"/>
+   <OPERATION tochMemLoc="28" actionType="read" sourceLoc="pbzip2.cpp:972" count="10" loop="0"/>
+   <OPERATION tochMemLoc="28" actionType="read" sourceLoc="pbzip2.cpp:981" count="14" loop="0"/>
+   <OPERATION tochMemLoc="28" actionType="read" sourceLoc="pbzip2.cpp:982" count="15" loop="0"/>
+   <OPERATION tochMemLoc="28" actionType="read" sourceLoc="pbzip2.cpp:990" count="19" loop="0"/>
+   <OPERATION tochMemLoc="28" actionType="read" sourceLoc="pbzip2.cpp:996" count="22" loop="0"/>
+  </Value>
+  <Value VName="30">
+   <OPERATION tochMemLoc="30" actionType="read" sourceLoc="pbzip2.cpp:965" count="7" loop="0"/>
+   <OPERATION tochMemLoc="30" actionType="read" sourceLoc="pbzip2.cpp:1577" count="169" loop="0"/>
+   <OPERATION tochMemLoc="30" actionType="read" sourceLoc="pbzip2.cpp:1676" count="183" loop="0"/>
+   <OPERATION tochMemLoc="30" actionType="read" sourceLoc="pbzip2.cpp:1759" count="207" loop="0"/>
+  </Value>
+  <Value VName="33">
+   <OPERATION tochMemLoc="33" actionType="read" sourceLoc="pbzip2.cpp:970" count="8" loop="0"/>
+   <OPERATION tochMemLoc="33" actionType="read" sourceLoc="pbzip2.cpp:979" count="12" loop="0"/>
+   <OPERATION tochMemLoc="33" actionType="read" sourceLoc="pbzip2.cpp:1726" count="202" loop="0"/>
+   <OPERATION tochMemLoc="33" actionType="read" sourceLoc="pbzip2.cpp:1769" count="208" loop="0"/>
+   <OPERATION tochMemLoc="33" actionType="read" sourceLoc="pbzip2.cpp:1790" count="218" loop="0"/>
+  </Value>
+  <Value VName="49">
+   <OPERATION tochMemLoc="49" actionType="read" sourceLoc="pbzip2.cpp:484" count="23" loop="0"/>
+   <OPERATION tochMemLoc="49" actionType="read" sourceLoc="pbzip2.cpp:485" count="24" loop="0"/>
+   <OPERATION tochMemLoc="49" actionType="read" sourceLoc="pbzip2.cpp:471" count="43" loop="0"/>
+   <OPERATION tochMemLoc="49" actionType="read" sourceLoc="pbzip2.cpp:1023" count="69" loop="0"/>
+  </Value>
+  <Value VName="54">
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:491" count="25" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:493" count="27" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:651" count="36" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:673" count="38" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:686" count="40" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:699" count="41" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:702" count="42" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:532" count="47" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:557" count="53" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:566" count="59" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:581" count="75" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:583" count="77" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:2733" count="114" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:2741" count="118" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:2749" count="120" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:2759" count="122" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:2773" count="126" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:2788" count="129" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:2799" count="134" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:2807" count="138" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:2815" count="140" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:2828" count="162" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:1616" count="171" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:1635" count="175" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:1643" count="178" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:1644" count="179" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:1649" count="180" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:1699" count="191" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:1711" count="198" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:1786" count="215" loop="0"/>
+   <OPERATION tochMemLoc="54" actionType="read" sourceLoc="pbzip2.cpp:1788" count="217" loop="0"/>
+  </Value>
+  <Value VName="57">
+   <OPERATION tochMemLoc="57" actionType="read" sourceLoc="pbzip2.cpp:492" count="26" loop="0"/>
+   <OPERATION tochMemLoc="57" actionType="read" sourceLoc="pbzip2.cpp:556" count="52" loop="0"/>
+   <OPERATION tochMemLoc="57" actionType="read" sourceLoc="pbzip2.cpp:2759" count="121" loop="0"/>
+   <OPERATION tochMemLoc="57" actionType="read" sourceLoc="pbzip2.cpp:2815" count="139" loop="0"/>
+   <OPERATION tochMemLoc="57" actionType="read" sourceLoc="pbzip2.cpp:1709" count="197" loop="0"/>
+   <OPERATION tochMemLoc="57" actionType="read" sourceLoc="pbzip2.cpp:1787" count="216" loop="0"/>
+  </Value>
+  <Value VName="60">
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:494" count="28" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:495" count="29" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:496" count="30" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:497" count="31" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:498" count="32" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:559" count="54" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:560" count="55" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:561" count="56" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:562" count="57" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:563" count="58" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:1780" count="210" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:1781" count="211" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:1782" count="212" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:1783" count="213" loop="0"/>
+   <OPERATION tochMemLoc="60" actionType="read" sourceLoc="pbzip2.cpp:1784" count="214" loop="0"/>
+  </Value>
+  <Value VName="66">
+   <OPERATION tochMemLoc="66" actionType="read" sourceLoc="pbzip2.cpp:664" count="37" loop="0"/>
+   <OPERATION tochMemLoc="66" actionType="read" sourceLoc="pbzip2.cpp:546" count="50" loop="0"/>
+   <OPERATION tochMemLoc="66" actionType="read" sourceLoc="pbzip2.cpp:547" count="51" loop="0"/>
+   <OPERATION tochMemLoc="66" actionType="read" sourceLoc="pbzip2.cpp:582" count="76" loop="0"/>
+  </Value>
+  <Value VName="68">
+   <OPERATION tochMemLoc="68" actionType="read" sourceLoc="pbzip2.cpp:677" count="39" loop="0"/>
+   <OPERATION tochMemLoc="68" actionType="read" sourceLoc="pbzip2.cpp:2793" count="133" loop="0"/>
+   <OPERATION tochMemLoc="68" actionType="read" sourceLoc="pbzip2.cpp:2824" count="159" loop="0"/>
+   <OPERATION tochMemLoc="68" actionType="read" sourceLoc="pbzip2.cpp:2719" count="166" loop="0"/>
+   <OPERATION tochMemLoc="68" actionType="read" sourceLoc="pbzip2.cpp:1630" count="173" loop="0"/>
+   <OPERATION tochMemLoc="68" actionType="read" sourceLoc="pbzip2.cpp:1702" count="193" loop="0"/>
+  </Value>
+  <Value VName="84">
+   <OPERATION tochMemLoc="84" actionType="read" sourceLoc="pbzip2.cpp:589" count="45" loop="0"/>
+  </Value>
+  <Value VName="203049">
+   <OPERATION tochMemLoc="203049" actionType="read" sourceLoc="pbzip2.cpp:752" count="46" loop="0"/>
+   <OPERATION tochMemLoc="203049" actionType="read" sourceLoc="pbzip2.cpp:858" count="61" loop="0"/>
+   <OPERATION tochMemLoc="203049" actionType="read" sourceLoc="pbzip2.cpp:833" count="62" loop="0"/>
+   <OPERATION tochMemLoc="203049" actionType="read" sourceLoc="pbzip2.cpp:1396" count="79" loop="0"/>
+   <OPERATION tochMemLoc="203049" actionType="read" sourceLoc="pbzip2.cpp:1398" count="80" loop="0"/>
+   <OPERATION tochMemLoc="203049" actionType="read" sourceLoc="pbzip2.cpp:1427" count="81" loop="0"/>
+   <OPERATION tochMemLoc="203049" actionType="read" sourceLoc="pbzip2.cpp:1429" count="82" loop="0"/>
+  </Value>
+  <Value VName="76">
+   <OPERATION tochMemLoc="76" actionType="read" sourceLoc="pbzip2.cpp:541" count="48" loop="0"/>
+   <OPERATION tochMemLoc="76" actionType="read" sourceLoc="pbzip2.cpp:542" count="49" loop="0"/>
+   <OPERATION tochMemLoc="76" actionType="read" sourceLoc="pbzip2.cpp:2745" count="119" loop="0"/>
+   <OPERATION tochMemLoc="76" actionType="read" sourceLoc="pbzip2.cpp:2803" count="135" loop="0"/>
+   <OPERATION tochMemLoc="76" actionType="read" sourceLoc="pbzip2.cpp:1630" count="172" loop="0"/>
+   <OPERATION tochMemLoc="76" actionType="read" sourceLoc="pbzip2.cpp:1630" count="174" loop="0"/>
+  </Value>
+  <Value VName="97">
+   <OPERATION tochMemLoc="97" actionType="read" sourceLoc="pbzip2.cpp:1056" count="64" loop="0"/>
+  </Value>
+  <Value VName="118">
+   <OPERATION tochMemLoc="118" actionType="read" sourceLoc="pbzip2.cpp:1023" count="68" loop="0"/>
+   <OPERATION tochMemLoc="118" actionType="read" sourceLoc="pbzip2.cpp:1028" count="70" loop="0"/>
+  </Value>
+  <Value VName="144">
+   <OPERATION tochMemLoc="144" actionType="read" sourceLoc="pbzip2.cpp:1388" count="78" loop="0"/>
+   <OPERATION tochMemLoc="144" actionType="read" sourceLoc="pbzip2.cpp:2508" count="222" loop="0"/>
+  </Value>
+  <Value VName="136">
+   <OPERATION tochMemLoc="136" actionType="read" sourceLoc="pbzip2.cpp:448" count="83" loop="0"/>
+   <OPERATION tochMemLoc="136" actionType="read" sourceLoc="pbzip2.cpp:450" count="85" loop="0"/>
+  </Value>
+  <Value VName="138">
+   <OPERATION tochMemLoc="138" actionType="read" sourceLoc="pbzip2.cpp:449" count="84" loop="0"/>
+  </Value>
+  <Value VName="6455">
+   <OPERATION tochMemLoc="6455" actionType="read" sourceLoc="pbzip2.h:114" count="86" loop="0"/>
+  </Value>
+  <Value VName="2560">
+   <OPERATION tochMemLoc="2560" actionType="read" sourceLoc="pbzip2.h:114" count="87" loop="0"/>
+   <OPERATION tochMemLoc="2560" actionType="read" sourceLoc="pbzip2.h:115" count="91" loop="0"/>
+   <OPERATION tochMemLoc="2560" actionType="read" sourceLoc="pbzip2.h:116" count="94" loop="0"/>
+   <OPERATION tochMemLoc="2560" actionType="read" sourceLoc="pbzip2.h:117" count="98" loop="0"/>
+   <OPERATION tochMemLoc="2560" actionType="read" sourceLoc="pbzip2.h:118" count="102" loop="0"/>
+   <OPERATION tochMemLoc="2560" actionType="read" sourceLoc="pbzip2.h:119" count="106" loop="0"/>
+   <OPERATION tochMemLoc="2560" actionType="read" sourceLoc="pbzip2.h:120" count="111" loop="0"/>
+  </Value>
+  <Value VName="5805">
+   <OPERATION tochMemLoc="5805" actionType="read" sourceLoc="pbzip2.h:114" count="88" loop="0"/>
+   <OPERATION tochMemLoc="5805" actionType="read" sourceLoc="pbzip2.cpp:2821" count="148" loop="0"/>
+  </Value>
+  <Value VName="3071">
+   <OPERATION tochMemLoc="3071" actionType="read" sourceLoc="pbzip2.h:114" count="89" loop="0"/>
+   <OPERATION tochMemLoc="3071" actionType="read" sourceLoc="pbzip2.cpp:2821" count="156" loop="0"/>
+  </Value>
+  <Value VName="206455">
+   <OPERATION tochMemLoc="206455" actionType="read" sourceLoc="pbzip2.h:115" count="90" loop="0"/>
+  </Value>
+  <Value VName="205805">
+   <OPERATION tochMemLoc="205805" actionType="read" sourceLoc="pbzip2.h:115" count="92" loop="0"/>
+   <OPERATION tochMemLoc="205805" actionType="read" sourceLoc="pbzip2.cpp:2821" count="149" loop="0"/>
+  </Value>
+  <Value VName="203071">
+   <OPERATION tochMemLoc="203071" actionType="read" sourceLoc="pbzip2.h:115" count="93" loop="0"/>
+   <OPERATION tochMemLoc="203071" actionType="read" sourceLoc="pbzip2.cpp:2821" count="145" loop="0"/>
+  </Value>
+  <Value VName="306455">
+   <OPERATION tochMemLoc="306455" actionType="read" sourceLoc="pbzip2.h:116" count="95" loop="0"/>
+  </Value>
+  <Value VName="305805">
+   <OPERATION tochMemLoc="305805" actionType="read" sourceLoc="pbzip2.h:116" count="96" loop="0"/>
+   <OPERATION tochMemLoc="305805" actionType="read" sourceLoc="pbzip2.cpp:2792" count="130" loop="0"/>
+   <OPERATION tochMemLoc="305805" actionType="read" sourceLoc="pbzip2.cpp:2803" count="136" loop="0"/>
+   <OPERATION tochMemLoc="305805" actionType="read" sourceLoc="pbzip2.cpp:2819" count="141" loop="0"/>
+   <OPERATION tochMemLoc="305805" actionType="read" sourceLoc="pbzip2.cpp:2821" count="147" loop="0"/>
+   <OPERATION tochMemLoc="305805" actionType="read" sourceLoc="pbzip2.cpp:2824" count="160" loop="0"/>
+  </Value>
+  <Value VName="303071">
+   <OPERATION tochMemLoc="303071" actionType="read" sourceLoc="pbzip2.h:116" count="97" loop="0"/>
+   <OPERATION tochMemLoc="303071" actionType="read" sourceLoc="pbzip2.cpp:2792" count="131" loop="0"/>
+   <OPERATION tochMemLoc="303071" actionType="read" sourceLoc="pbzip2.cpp:2803" count="137" loop="0"/>
+   <OPERATION tochMemLoc="303071" actionType="read" sourceLoc="pbzip2.cpp:2819" count="142" loop="0"/>
+   <OPERATION tochMemLoc="303071" actionType="read" sourceLoc="pbzip2.cpp:2821" count="155" loop="0"/>
+   <OPERATION tochMemLoc="303071" actionType="read" sourceLoc="pbzip2.cpp:2824" count="161" loop="0"/>
+  </Value>
+  <Value VName="406455">
+   <OPERATION tochMemLoc="406455" actionType="read" sourceLoc="pbzip2.h:117" count="99" loop="0"/>
+  </Value>
+  <Value VName="405805">
+   <OPERATION tochMemLoc="405805" actionType="read" sourceLoc="pbzip2.h:117" count="100" loop="0"/>
+   <OPERATION tochMemLoc="405805" actionType="read" sourceLoc="pbzip2.cpp:2821" count="146" loop="0"/>
+  </Value>
+  <Value VName="403071">
+   <OPERATION tochMemLoc="403071" actionType="read" sourceLoc="pbzip2.h:117" count="101" loop="0"/>
+   <OPERATION tochMemLoc="403071" actionType="read" sourceLoc="pbzip2.cpp:2821" count="157" loop="0"/>
+  </Value>
+  <Value VName="505805">
+   <OPERATION tochMemLoc="505805" actionType="read" sourceLoc="pbzip2.h:118" count="103" loop="0"/>
+   <OPERATION tochMemLoc="505805" actionType="read" sourceLoc="pbzip2.cpp:2821" count="150" loop="0"/>
+  </Value>
+  <Value VName="506455">
+   <OPERATION tochMemLoc="506455" actionType="read" sourceLoc="pbzip2.h:118" count="104" loop="0"/>
+  </Value>
+  <Value VName="503071">
+   <OPERATION tochMemLoc="503071" actionType="read" sourceLoc="pbzip2.h:118" count="105" loop="0"/>
+   <OPERATION tochMemLoc="503071" actionType="read" sourceLoc="pbzip2.cpp:2821" count="144" loop="0"/>
+  </Value>
+  <Value VName="606455">
+   <OPERATION tochMemLoc="606455" actionType="read" sourceLoc="pbzip2.h:119" count="107" loop="0"/>
+  </Value>
+  <Value VName="605805">
+   <OPERATION tochMemLoc="605805" actionType="read" sourceLoc="pbzip2.h:119" count="108" loop="0"/>
+   <OPERATION tochMemLoc="605805" actionType="read" sourceLoc="pbzip2.cpp:2821" count="151" loop="0"/>
+  </Value>
+  <Value VName="603071">
+   <OPERATION tochMemLoc="603071" actionType="read" sourceLoc="pbzip2.h:119" count="109" loop="0"/>
+   <OPERATION tochMemLoc="603071" actionType="read" sourceLoc="pbzip2.cpp:2821" count="154" loop="0"/>
+  </Value>
+  <Value VName="706455">
+   <OPERATION tochMemLoc="706455" actionType="read" sourceLoc="pbzip2.h:120" count="110" loop="0"/>
+  </Value>
+  <Value VName="705805">
+   <OPERATION tochMemLoc="705805" actionType="read" sourceLoc="pbzip2.h:120" count="112" loop="0"/>
+   <OPERATION tochMemLoc="705805" actionType="read" sourceLoc="pbzip2.cpp:2821" count="152" loop="0"/>
+  </Value>
+  <Value VName="703071">
+   <OPERATION tochMemLoc="703071" actionType="read" sourceLoc="pbzip2.h:120" count="113" loop="0"/>
+   <OPERATION tochMemLoc="703071" actionType="read" sourceLoc="pbzip2.cpp:2821" count="153" loop="0"/>
+  </Value>
+  <Value VName="164">
+   <OPERATION tochMemLoc="164" actionType="read" sourceLoc="pbzip2.cpp:2735" count="115" loop="0"/>
+   <OPERATION tochMemLoc="164" actionType="read" sourceLoc="pbzip2.cpp:2764" count="124" loop="0"/>
+   <OPERATION tochMemLoc="164" actionType="read" sourceLoc="pbzip2.cpp:1706" count="196" loop="0"/>
+  </Value>
+  <Value VName="158">
+   <OPERATION tochMemLoc="158" actionType="read" sourceLoc="pbzip2.cpp:2735" count="116" loop="0"/>
+   <OPERATION tochMemLoc="158" actionType="read" sourceLoc="pbzip2.cpp:2792" count="132" loop="0"/>
+   <OPERATION tochMemLoc="158" actionType="read" sourceLoc="pbzip2.cpp:2721" count="167" loop="0"/>
+   <OPERATION tochMemLoc="158" actionType="read" sourceLoc="pbzip2.cpp:2722" count="168" loop="0"/>
+   <OPERATION tochMemLoc="158" actionType="read" sourceLoc="pbzip2.cpp:1693" count="190" loop="0"/>
+  </Value>
+  <Value VName="7575">
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:2736" count="117" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:2762" count="123" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:2767" count="125" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:2821" count="143" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1640" count="176" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1642" count="177" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1654" count="181" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1668" count="182" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1682" count="184" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1687" count="185" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1688" count="186" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1689" count="187" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1690" count="188" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1692" count="189" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1701" count="192" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1705" count="195" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1713" count="199" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1717" count="200" loop="0"/>
+   <OPERATION tochMemLoc="7575" actionType="read" sourceLoc="pbzip2.cpp:1719" count="201" loop="0"/>
+  </Value>
+  <Value VName="160">
+   <OPERATION tochMemLoc="160" actionType="read" sourceLoc="pbzip2.cpp:2822" count="158" loop="0"/>
+  </Value>
+  <Value VName="162">
+   <OPERATION tochMemLoc="162" actionType="read" sourceLoc="pbzip2.cpp:2719" count="165" loop="0"/>
+   <OPERATION tochMemLoc="162" actionType="read" sourceLoc="pbzip2.cpp:1703" count="194" loop="0"/>
+  </Value>
+  <Value VName="124">
+   <OPERATION tochMemLoc="124" actionType="read" sourceLoc="pbzip2.cpp:1598" count="170" loop="0"/>
+  </Value>
+  <Value VName="172">
+   <OPERATION tochMemLoc="172" actionType="read" sourceLoc="pbzip2.cpp:1729" count="203" loop="0"/>
+   <OPERATION tochMemLoc="172" actionType="read" sourceLoc="pbzip2.cpp:1730" count="204" loop="0"/>
+  </Value>
+  <Value VName="198">
+   <OPERATION tochMemLoc="198" actionType="read" sourceLoc="pbzip2.cpp:2508" count="221" loop="0"/>
+  </Value>
+ </ROOTNODE>

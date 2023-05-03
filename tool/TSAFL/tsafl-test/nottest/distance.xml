@@ -1,0 +1,39 @@
+<ROOTNODE>
+	<Start Node_count="9">
+		<End Node_count="10" Value="" />
+	</Start>
+	<Start Node_count="10">
+		<End Node_count="11" Value="" />
+	</Start>
+	<Start Node_count="11">
+		<End Node_count="12" Value="" />
+	</Start>
+	<Start Node_count="0">
+		<End Node_count="2" Value="">
+			<Node_count count="1" />
+		</End>
+	</Start>
+	<Start Node_count="1">
+		<End Node_count="2" Value="" />
+	</Start>
+	<Start Node_count="2">
+		<End Node_count="5" Value="">
+			<Node_count count="4" />
+		</End>
+	</Start>
+	<Start Node_count="4">
+		<End Node_count="5" Value="" />
+	</Start>
+	<Start Node_count="5">
+		<End Node_count="6" Value="" />
+		<End Node_count="8" Value="" />
+	</Start>
+	<Start Node_count="6">
+		<End Node_count="8" Value="">
+			<Node_count count="7" />
+		</End>
+	</Start>
+	<Start Node_count="7">
+		<End Node_count="8" Value="" />
+	</Start>
+</ROOTNODE>

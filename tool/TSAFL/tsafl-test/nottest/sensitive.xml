@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><ROOTNODE>
+  <Value VName="6">
+   <OPERATION tochMemLoc="6" actionType="read" sourceLoc="lock.c:7" count="0" loop="0"/>
+   <OPERATION tochMemLoc="6" actionType="read" sourceLoc="lock.c:8" count="1" loop="0"/>
+   <OPERATION tochMemLoc="6" actionType="read" sourceLoc="lock.c:13" count="2" loop="0"/>
+   <OPERATION tochMemLoc="6" actionType="read" sourceLoc="lock.c:14" count="3" loop="0"/>
+   <OPERATION tochMemLoc="6" actionType="read" sourceLoc="lock.c:23" count="7" loop="1"/>
+  </Value>
+  <Value VName="8">
+   <OPERATION tochMemLoc="8" actionType="read" sourceLoc="lock.c:24" count="8" loop="1"/>
+   <OPERATION tochMemLoc="8" actionType="read" sourceLoc="lock.c:26" count="9" loop="0"/>
+   <OPERATION tochMemLoc="8" actionType="read" sourceLoc="lock.c:31" count="10" loop="0"/>
+   <OPERATION tochMemLoc="8" actionType="read" sourceLoc="lock.c:32" count="11" loop="0"/>
+  </Value>
+ </ROOTNODE>

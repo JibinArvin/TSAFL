@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.9) 
+project(TSAFL VERSION 0.1 LANGUAGES CXX C)
+set(CMAKE_BUILD_TYPE DEBUG) 
+find_package(LibXml2 REQUIRED)
+include_directories(${LIBXML2_INCLUDE_DIR} ${CMAKE_SOURCE_DIR}/)
+add_library(readxml_library STATIC tsafl/readxml.c)
+add_subdirectory(tsafl)
+# add_subdirectory(tsafl-test)
