@@ -23,6 +23,7 @@ We strongly recommend installing and running our tool based on Docker, since the
   - You can build your own image with  `sudo docker build -t tsafl:01 --no-cache ./`
 ### Running on docker
   You need run the docker in privileged mode!
+  
   `sudo docker run --privileged -it tsafl:01 /bin/bash`
 
 ### Build the tool inside the docker
