@@ -66,4 +66,5 @@ We strongly recommend installing and running our tool based on Docker, since the
        ```
        
     - Fuzz it 
+    
       `${BUILD_DIR}/tsafl -i intputs -o findings_dir -m 200 ./target -argumet @@`
