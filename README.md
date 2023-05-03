@@ -45,17 +45,17 @@ We strongly recommend installing and running our tool based on Docker, since the
         extract-bc target-file
       ```
       
-   - Get the static analysis of bc code.
-     - move bc code into tool/analysis
-     - follow the steps
-      
-      ```
-        ./static_analysis.sh target # don't add .bc!
-        mv -r *.xml ${target-files}/
-        mv config.txt ${target-files}/
-      ```
+ - Get the static analysis of bc code.
+   - move bc code into tool/analysis
+   - follow the steps
 
-   - Build target program with Pin.(Depend on the build system)
+    ```
+      ./static_analysis.sh target # don't add .bc!
+      mv -r *.xml ${target-files}/
+      mv config.txt ${target-files}/
+    ```
+
+- Build target program with Pin.(Depend on the build system)
      
        ```
         export ConFile_PATH=config.txt
@@ -65,6 +65,6 @@ We strongly recommend installing and running our tool based on Docker, since the
         make
        ```
        
-    - Fuzz it 
+- Fuzz it 
     
-      `${BUILD_DIR}/tsafl -i intputs -o findings_dir -m 200 ./target -argumet @@`
+  `${BUILD_DIR}/tsafl -i intputs -o findings_dir -m 200 ./target -argumet @@`
