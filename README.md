@@ -35,6 +35,7 @@ We strongly recommend installing and running our tool based on Docker, since the
   After finishing all preparation, you can find tsafl in "/tool/TSAFL/build/tsafl/tsafl".
   First of all, plz get the static analysis result.
     - Get the bc file from projects. There are several way to get the bc file, but I recommend usign wllvm. If you want to know plz visit https://github.com/travitch/whole-program-llvm. 
+    
       ```
         pip install wllvm
         export LLVM_COMPILER=clang
@@ -43,15 +44,19 @@ We strongly recommend installing and running our tool based on Docker, since the
         make
         extract-bc target-file
       ```
-    - Get the static analysis of bc code.
-      - move bc code into tool/analysis
-      - follow the steps
+      
+   - Get the static analysis of bc code.
+     - move bc code into tool/analysis
+     - follow the steps
+      
       ```
         ./static_analysis.sh target # don't add .bc!
         mv -r *.xml ${target-files}/
         mv config.txt ${target-files}/
       ```
-     - Build target program with Pin.(Depend on the build system)
+
+   - Build target program with Pin.(Depend on the build system)
+     
        ```
         export ConFile_PATH=config.txt
         export CC=${TSAFL_DIR}/CUR-clang-fast
@@ -59,5 +64,6 @@ We strongly recommend installing and running our tool based on Docker, since the
         ./configure
         make
        ```
-      - Fuzz it 
-        `${BUILD_DIR}/tsafl -i intputs -o findings_dir -m 200 ./target -argumet @@`
+       
+    - Fuzz it 
+      `${BUILD_DIR}/tsafl -i intputs -o findings_dir -m 200 ./target -argumet @@`
