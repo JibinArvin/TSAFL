@@ -3,4 +3,3 @@ clang+llvm
 .clangd/
 build/
 __pycache__/
-compile_commands.json

@@ -4459,18 +4459,18 @@ static void show_stats(void) { // NEXT:
       strcpy(tmp, cMGN);
     else
 
-        /* Subsequent cycles, but we're still making finds. */
-        if (cycles_wo_finds < 25 || min_wo_finds < 30)
-      strcpy(tmp, cYEL);
-    else
+      /* Subsequent cycles, but we're still making finds. */
+      if (cycles_wo_finds < 25 || min_wo_finds < 30)
+        strcpy(tmp, cYEL);
+      else
 
         /* No finds for a long time and no test cases to try. */
         if (cycles_wo_finds > 100 && !pending_not_fuzzed && min_wo_finds > 120)
-      strcpy(tmp, cLGN);
+          strcpy(tmp, cLGN);
 
-    /* Default: cautiously OK to stop? */
-    else
-      strcpy(tmp, cLBL);
+        /* Default: cautiously OK to stop? */
+        else
+          strcpy(tmp, cLBL);
   }
 
   SAYF(bV bSTOP "        run time : " cRST "%-34s " bSTG bV bSTOP
