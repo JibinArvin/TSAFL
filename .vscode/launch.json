@@ -11,6 +11,14 @@
         {
             "type": "lldb",
             "request": "launch",
+            "name": "docker2",
+            "program": "/workdir/TSAFL/tool/TSAFL/build/tsafl/tsafl",
+            "cwd": "/workdir/tsafl-test-files/pbzip2-d/pbzip2_test_d",
+            "args": "-i input-01 -o findings_dir -m 200 ./pbz2 -f -k -p4 -S16 -d @@"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
             "name": "tsafl",
             "program": "/workdir/TSAFL/tool/TSAFL/build/tsafl/tsafl",
             "cwd": "/workdir/test_files/test_files/test_tsafl",
