@@ -1370,7 +1370,7 @@ void clean_xml_info() { clean_xml_config(f_array, v_array, d_array, g_array); }
 EXP_ST void remove_shm_t_info() { shmctl(t_info_id, IPC_RMID, NULL); }
 /* Configure shared memory and virgin_bits. This is called at startup. */
 EXP_ST void setup_shm_t_info(void) {
-  fprintf(stdout, "SETTING UP SHM T INFO!\n");
+  TSF("SETTING UP SHM T INFO!\n");
   u8 *t_info_str;
   key_t key_info = ftok("/tmp", 111);
   /* Not very secuity to set power setting as 0666. */
