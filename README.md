@@ -25,6 +25,7 @@ We strongly recommend installing and running our tool based on Docker, since the
   You need run the docker in privileged mode!
   
   `sudo docker run --privileged -it tsafl:01 /bin/bash`
+
   NOTE: If you can't enable the schedule properly, I recommend fellow the steps:
   ```
   echo 'kernel.sched_rt_runtime_us=-1' >> /etc/sysctl.conf
