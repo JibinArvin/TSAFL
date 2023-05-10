@@ -2826,13 +2826,8 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
       u8 hnb = has_new_bits(virgin_bits);
       if (hnb > new_bits)
         new_bits = hnb;
-      if (q->exec_cksum) {
-        FATAL("[ERROR] Calibrate_case find var! WHY!\n");
-        exit(1);
-      } else {
-        q->exec_cksum = cksum;
-        memcpy(first_trace, trace_bits, MAP_SIZE);
-      }
+      q->exec_cksum = cksum;
+      memcpy(first_trace, trace_bits, MAP_SIZE);
     }
   }
 
@@ -4459,18 +4454,18 @@ static void show_stats(void) { // NEXT:
       strcpy(tmp, cMGN);
     else
 
-      /* Subsequent cycles, but we're still making finds. */
-      if (cycles_wo_finds < 25 || min_wo_finds < 30)
-        strcpy(tmp, cYEL);
-      else
+        /* Subsequent cycles, but we're still making finds. */
+        if (cycles_wo_finds < 25 || min_wo_finds < 30)
+      strcpy(tmp, cYEL);
+    else
 
         /* No finds for a long time and no test cases to try. */
         if (cycles_wo_finds > 100 && !pending_not_fuzzed && min_wo_finds > 120)
-          strcpy(tmp, cLGN);
+      strcpy(tmp, cLGN);
 
-        /* Default: cautiously OK to stop? */
-        else
-          strcpy(tmp, cLBL);
+    /* Default: cautiously OK to stop? */
+    else
+      strcpy(tmp, cLBL);
   }
 
   SAYF(bV bSTOP "        run time : " cRST "%-34s " bSTG bV bSTOP

@@ -5,7 +5,7 @@
             "request": "launch",
             "name": "docker",
             "program": "/workdir/TSAFL/tool/TSAFL/build/tsafl/tsafl",
-            "cwd": "/workdir/test_files/test_files/pbzip2-d/pbzip2_test_d",
+            "cwd": "/workdir/tsafl-test-files/pbzip2-d/pbzip2_test_d",
             "args": "-i input-01 -o findings_dir -m 200 ./pbz2 -f -k -p4 -S16 -d @@"
         },
         {
@@ -21,16 +21,24 @@
             "request": "launch",
             "name": "tsafl",
             "program": "/workdir/TSAFL/tool/TSAFL/build/tsafl/tsafl",
-            "cwd": "/workdir/test_files/test_files/test_tsafl",
-            "args": "-i input -o findings_dir -m 200 ./test @@"
+            "cwd": "/workdir/tsafl-test-files/test_tsafl",
+            "args": "-i input -o findings_dir -m 200 ./test-baniry @@"
         },
         {
             "type": "lldb",
             "request": "launch",
             "name": "test-instr",
             "program": "/workdir/TSAFL/tool/TSAFL/llvm_mode/test-instr",
-            "cwd": "/workdir/tsafl/tool/TSAFL/llvm_mode/",
+            "cwd": "/workdir/TSAFL/tool/TSAFL/llvm_mode/",
             "args": ""
-        }
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "tsafl-self",
+            "program": "/workdir/tsafl-test-files/test_tsafl/test",
+            "cwd": "/workdir/tsafl-test-files/test_tsafl",
+            "args": ""
+        },
     ]
 }

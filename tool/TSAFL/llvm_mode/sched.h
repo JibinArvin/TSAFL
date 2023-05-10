@@ -1,5 +1,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#include <bits/types/FILE.h>
+#include <stddef.h>
 #endif
 
 #include <pthread.h>
@@ -113,7 +115,11 @@ int set_sched_dl(__u64 runtime, __u64 deadline, __u64 period) {
   if (ret < 0) {
     perror("sched_setattr error\n");
     printf("错误：%d\n", errno);
-
+    // Use a file to remember the failed number.
+    FILE *fp;
+    fp = fopen("error_log.txt", "w");
+    fprintf(fp, "sched_setattr error: %d\n", errno);
+    fclose(fp);
     exit(-1);
   }
   return ret;

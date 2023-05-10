@@ -3,9 +3,9 @@
 #ifndef __AFL_HELPER_H__
 #define __AFL_HELPER_H__
 
-#include "llvm_mode/Currency-instr.h"
-#include "readxml.h"
-#include "types.h"
+#include "../llvm_mode/Currency-instr.h"
+#include "../readxml.h"
+#include "../types.h"
 #include <stddef.h>
 #include <stdint.h>
 #define AFL_LLVM_PASS

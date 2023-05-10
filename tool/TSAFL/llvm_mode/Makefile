@@ -101,8 +101,8 @@ endif
 
 test_build: $(PROGS)
 	@echo "[*] Testing the CXX wrapper and instrumentation output..."
-	unset AFL_USE_ASAN AFL_USE_MSAN AFL_INST_RATIO; AFL_QUIET=1 AFL_PATH=. AFL_CC=$(CC) ../CUR-clang-fast $(CFLAGS) -Wno-return-type -c ./test.c -o test.o $(LDFLAGS) -fsanitize=address
-	$(CXX) ./test.o ../Currency-instr.o ../afl-llvm-rt.o -g -O0 -o test-instr -pthread -ldl -fsanitize=address
+	unset AFL_USE_ASAN AFL_USE_MSAN AFL_INST_RATIO; AFL_QUIET=1 AFL_PATH=. AFL_CC=$(CC) ../CUR-clang-fast $(CFLAGS) -Wno-return-type -c ./test.c -o test.o $(LDFLAGS) # -fsanitize=address
+	$(CXX) ./test.o ../Currency-instr.o ../afl-llvm-rt.o -g -O0 -o test-instr -pthread -ldl # -fsanitize=address
 	@echo "[+] All right, the instrumentation seems to be working!"
 
 all_done: test_build
