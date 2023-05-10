@@ -3002,6 +3002,8 @@ static u8 run_target_with_scheduel(char **argv, u32 timeout, u8 *use_mem,
      * waiting next step.*/
     size_t plan_size =
         result->list[i]->entry_size[0] + result->list[i]->entry_size[1];
+    if (t_info->kp_mem_size != plan_size)
+      t_info->kp_mem_size = plan_size;
     finish_one_plan_success(i, t_info, plan_size);
     if (fault != FAULT_NONE) {
       final_fault = fault;

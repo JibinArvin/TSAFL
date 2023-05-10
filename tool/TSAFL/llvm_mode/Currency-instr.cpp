@@ -199,7 +199,6 @@ void __attribute__((constructor)) traceBegin(void) {
 
 #ifdef OUT_DEBUG
   fprintf(stdout, "[OUT_DEBUG] Ischedule state: %d.\n", Ischedule);
-
 #endif
   if (!Ischedule) {
     t_info->time = 1000;
@@ -222,8 +221,6 @@ void __attribute__((constructor)) traceBegin(void) {
   MEM_BARRIER();
 #ifdef OUT_DEBUG
   TSF("Ischedule: %d", Ischedule);
-  TSF("[OUT_DEBUG] threadTime: %ld.\n", t_info->time);
-
 #endif
   /* Special for Scheduel mode */
   if (Ischedule == true) {
@@ -428,7 +425,7 @@ void init_thread_info(long int tid_temp) {
   t_info->thread_create_jion[thread_create_join_number] = tid_temp;
   thread_create_join_number++;
   pthread_spin_unlock(&thread_create_join_lock);
-  if (tid_temp != mainTid) {
+  if (Ischedule && tid_temp != mainTid) {
 
 #ifdef OUT_DEBUG
     TSF("Seting PSIEruntime for mythreadid: %d", mytid);
@@ -555,11 +552,6 @@ void instr_LOC(void *func, unsigned int a, unsigned int loc) {
              t_info->kp_thread_array[threadNumber][count - 1])) {
       return;
     }
-    int32_t kp_time_loc = thread_care.find(threadNumber) != thread_care.end()
-                              ? thread_care[threadNumber]
-                              : -1;
-    if (kp_time_loc == -1)
-      return;
     pthread_spin_lock(&thread_count_lock);
     int number_action = count_exec;
     /* skip the */ /* But need change. */
@@ -580,7 +572,7 @@ void instr_LOC(void *func, unsigned int a, unsigned int loc) {
  */
 void instr_LOC_string(void *func, unsigned int loc) {
 #ifdef OUT_DEBUG
-  TSF("[DEBUG] instr_LOC_string-> loc: %d .", loc);
+  fprintf(stdout, "[DEBUG] instr_LOC_string-> loc: %d .\n", loc);
 #endif
   unsigned long tid = gettid();
   int threadNumber;
