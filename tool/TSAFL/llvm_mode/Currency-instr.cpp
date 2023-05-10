@@ -555,6 +555,11 @@ void instr_LOC(void *func, unsigned int a, unsigned int loc) {
              t_info->kp_thread_array[threadNumber][count - 1])) {
       return;
     }
+    int32_t kp_time_loc = thread_care.find(threadNumber) != thread_care.end()
+                              ? thread_care[threadNumber]
+                              : -1;
+    if (kp_time_loc == -1)
+      return;
     pthread_spin_lock(&thread_count_lock);
     int number_action = count_exec;
     /* skip the */ /* But need change. */

@@ -2598,14 +2598,14 @@ void insert_scheduel_plan(struct scheduel_result *plan,
       FATAL("plan->create_sequence -1 here!");
     t_info->thread_care[i] = plan->result_seq[i];
   }
-  // for (size_t i = 0; i < plan->entry_size[0]; i++) {
-  //   t_info->kp_times[0][i] = plan->stop_times[i];
-  // }
-  // size_t full_size = plan->entry_size[0] + plan->entry_size[1];
-  // for (size_t i = plan->entry_size[0], j = 0; i < full_size; i++) {
-  //   t_info->kp_times[1][j] = plan->stop_times[i];
-  //   j++;
-  // }
+  for (size_t i = 0; i < plan->entry_size[0]; i++) {
+    t_info->kp_times[0][i] = plan->stop_times[i];
+  }
+  size_t full_size = plan->entry_size[0] + plan->entry_size[1];
+  for (size_t i = plan->entry_size[0], j = 0; i < full_size; i++) {
+    t_info->kp_times[1][j] = plan->stop_times[i];
+    j++;
+  }
   for (size_t i = 0; i < MY_PTHREAD_CREATE_MAX; i++) {
     if (plan->thread_same_period[i] == -1) {
       t_info->thread_same_period_size = i + 1;
