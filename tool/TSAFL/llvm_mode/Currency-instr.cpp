@@ -429,8 +429,7 @@ void init_thread_info(long int tid_temp) {
   t_info->thread_create_jion[thread_create_join_number] = tid_temp;
   thread_create_join_number++;
   pthread_spin_unlock(&thread_create_join_lock);
-  if (Ischedule && tid_temp != mainTid &&
-      thread_care.find(tid_temp) != thread_care.end()) {
+  if (Ischedule && thread_care.find(tid_temp) != thread_care.end()) {
 
 #ifdef OUT_DEBUG
     TSF("Seting PSIEruntime for mythreadid: %ld", tid_temp);
@@ -439,8 +438,7 @@ void init_thread_info(long int tid_temp) {
     usleep(1000); /* Make sure the setting work!*/
   }
 
-  if (Ischedule && tid_temp != mainTid &&
-      thread_care.find(tid_temp) != thread_care.end()) {
+  if (Ischedule && thread_care.find(tid_temp) != thread_care.end()) {
     if (sched_setaffinity(0, sizeof(mask), &mask) == -1) {
       FILE *fp = fopen("sch_log.txt", "w");
       fprintf(fp, "Set CPU affinity failue, ERROR:%s\n", strerror(errno));
