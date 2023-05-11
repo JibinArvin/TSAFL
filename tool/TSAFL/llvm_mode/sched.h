@@ -124,6 +124,35 @@ int set_sched_dl(__u64 runtime, __u64 deadline, __u64 period) {
   }
   return ret;
 }
+
+int set_sched_FIFO() {
+  struct sched_attr attr;
+  int ret;
+  unsigned int flags = 0;
+
+  attr.size = sizeof(attr);
+  attr.sched_flags = 0;
+  attr.sched_nice = 0;
+  attr.sched_priority = 1;
+  attr.sched_policy = SCHED_FIFO;
+  attr.sched_runtime = 0;
+  attr.sched_deadline = 0;
+  attr.sched_period = 0;
+
+  ret = sched_setattr(0, &attr, flags);
+  if (ret < 0) {
+    perror("sched_setattr error\n");
+    printf("错误：%d\n", errno);
+    // Use a file to remember the failed number.
+    FILE *fp;
+    fp = fopen("error_log.txt", "w");
+    fprintf(fp, "sched_setattr error: %d\n", errno);
+    fclose(fp);
+    exit(-1);
+  }
+
+  return ret;
+}
 #ifdef __cplusplus
 // static volatile sig_atomic_t tid_to_run;
 std::atomic<int> tid_to_run;

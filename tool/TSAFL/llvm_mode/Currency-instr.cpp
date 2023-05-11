@@ -48,7 +48,7 @@ pthread_spinlock_t thread_count_lock;
 pthread_spinlock_t thread_create_lock;
 pthread_spinlock_t thread_join_lock;
 pthread_spinlock_t thread_create_join_lock;
-
+pthread_spinlock_t thread_care_lock;
 static volatile int count_exec = 0;
 static volatile int thread_create_count = 0;
 static volatile int thread_jion_count = 0;
@@ -59,7 +59,8 @@ static bool Ischedule = false;
 // static bool TupleScheduling = false;
 static int num_cpu = 0;                    // number of available CPUs
 static int num_td = 0;                     // number of threads concerned
-static int num_kp = 0;                     // number of kep points per thread
+static cpu_set_t mask;
+static cpu_set_t get;
 static uint64_t PSIEruntime = 1000 * 1000; // nsec
 
 static int mainTid;
@@ -154,7 +155,7 @@ int DBDSdetectCPUs() {
 
   return ncpu;
 }
-
+void traceEnd(void);
 void __attribute__((constructor)) traceBegin(void) {
   /*NOTE: How to solve the maintid loss? */
   /* Insert a instr_PthreadCall after main function, If you want to know more
@@ -164,13 +165,15 @@ void __attribute__((constructor)) traceBegin(void) {
 #ifdef OUT_DEBUG
   fprintf(stdout, "[OUT_DEBUG] traceBegin.\n");
 #endif
-
+  /* In case the traceEnd don't work! */
+  atexit(traceEnd);
   pthread_spin_init(&thread_count_lock, PTHREAD_PROCESS_SHARED);
   pthread_spin_init(&thread_create_lock, PTHREAD_PROCESS_SHARED);
   pthread_spin_init(&thread_join_lock, PTHREAD_PROCESS_SHARED);
   pthread_spin_init(&thread_create_join_lock, PTHREAD_PROCESS_SHARED);
   pthread_spin_init(&thread_set_lock, PTHREAD_PROCESS_SHARED);
   pthread_spin_init(&threadSelf_lock, PTHREAD_PROCESS_SHARED);
+  pthread_spin_init(&thread_care_lock, PTHREAD_PROCESS_SHARED);
 #ifdef OUT_DEBUG
   fprintf(stdout, "[OUT_DEBUG] finish spinlock init.\n");
 #endif
@@ -232,8 +235,8 @@ void __attribute__((constructor)) traceBegin(void) {
     num_td = t_info->N;
     PSIEruntime = t_info->time;
     /* The deadline time max value is set by the */
-    if (PSIEruntime > 10000000) {
-      PSIEruntime = 10000000;
+    if (PSIEruntime > 1000000) {
+      PSIEruntime = 1000000;
     }
 #ifdef OUT_DEBUG
     TSF("---------Under Ischedule mode!------------");
@@ -243,21 +246,17 @@ void __attribute__((constructor)) traceBegin(void) {
 
 #ifdef OUT_DEBUG
   fprintf(stdout, "[OUT_DEBUG] traceBegin end.\n");
+  printf("cpus: %d\n", num_cpu);
 #endif
-
-// #define TEST_CONNECT
-#ifdef TEST_CONNECT
-  TSF("---------TEST CONNECT--------");
-  if (t_info->test_flag1 == 1) {
-    TSF(" TEST CONNECT right now!");
-    TSF(" test_flag2 is %d now!", t_info->test_flag2);
+  if (Ischedule == true) {
+    CPU_ZERO(&mask);
+    CPU_SET(0, &mask);
   }
-#endif
 }
 
 /* It is very dangerous to use global variables in the destructor function, and
  * it is very easy to get a null value to a unexpected result! */
-void __attribute__((destructor)) traceEnd(void) {
+void traceEnd(void) {
 
 #ifdef DEBUG
   printf("[DEBUG] enter traceEnd\n");
@@ -316,6 +315,7 @@ void __attribute__((destructor)) traceEnd(void) {
   pthread_spin_destroy(&thread_join_lock);
   pthread_spin_destroy(&thread_set_lock);
   pthread_spin_destroy(&threadSelf_lock);
+  pthread_spin_destroy(&thread_care_lock);
 #ifdef OUT_DEBUG
   fprintf(stdout, "[OUT_DEBUG] traceEnd end.\n");
   fprintf(stdout, "[OUT_DEBUG] OUT INFO:\n thread_create_join,\n");
@@ -396,6 +396,7 @@ void init_threadSelf(long int tid_temp) {
 void init_thread_info(long int tid_temp) {
 
   if (Ischedule == true) {
+    pthread_spin_lock(&thread_care_lock);
     if (thread_care.size() == 0) {
 #ifdef OUT_DEBUG
       TSF("Now it's the time init thread_care!");
@@ -404,6 +405,8 @@ void init_thread_info(long int tid_temp) {
         thread_care[t_info->thread_care[i]] = i;
       }
     }
+    t_info->test_flag1 = 1;
+    pthread_spin_unlock(&thread_care_lock);
   }
 
   if (thread_set.count(tid_temp) != 0)
@@ -417,36 +420,33 @@ void init_thread_info(long int tid_temp) {
 
   // set the threadnumber by tid tp mytid
   add_tid_to_threadNumber(tid_temp);
-  int mytid = tid_to_threadNumber[tid_temp];
-  t_info->thread_count_to_tid[mytid] = tid_temp;
+  int mytid = tid_to_threadNumber[tid_temp]; // The map from std make sure the
+                                             // read action is thread-safety.
+  t_info->thread_count_to_tid[mytid] = tid_temp; // No range check here!
 
   // add create info into t_info
   pthread_spin_lock(&thread_create_join_lock);
   t_info->thread_create_jion[thread_create_join_number] = tid_temp;
   thread_create_join_number++;
   pthread_spin_unlock(&thread_create_join_lock);
-  if (Ischedule && tid_temp != mainTid) {
+  if (Ischedule && tid_temp != mainTid &&
+      thread_care.find(tid_temp) != thread_care.end()) {
 
 #ifdef OUT_DEBUG
-    TSF("Seting PSIEruntime for mythreadid: %d", mytid);
+    TSF("Seting PSIEruntime for mythreadid: %ld", tid_temp);
 #endif
-    if (PSIEruntime <
-        10000) // DBDSruntime is the observed execution time in dry run stage
-      set_sched_dl((uint64_t)(PSIEruntime * 100),
-                   (uint64_t)(PSIEruntime * 1000),
-                   (uint64_t)(PSIEruntime * 1000));
-    else if (10000 <= PSIEruntime && PSIEruntime < 100000)
-      set_sched_dl((uint64_t)(PSIEruntime * 75), (uint64_t)(PSIEruntime * 750),
-                   (uint64_t)(PSIEruntime * 750));
-    else if (100000 <= PSIEruntime && PSIEruntime < 1000000)
-      set_sched_dl((uint64_t)(PSIEruntime * 50), (uint64_t)(PSIEruntime * 500),
-                   (uint64_t)(PSIEruntime * 500));
-    else if (1000000 <= PSIEruntime && PSIEruntime < 2000000)
-      set_sched_dl((uint64_t)(PSIEruntime * 25), (uint64_t)(PSIEruntime * 250),
-                   (uint64_t)(PSIEruntime * 250));
-    else
-      set_sched_dl((uint64_t)(PSIEruntime * 10), (uint64_t)(PSIEruntime * 100),
-                   (uint64_t)(PSIEruntime * 100));
+    set_sched_FIFO();
+    usleep(1000); /* Make sure the setting work!*/
+  }
+
+  if (Ischedule && tid_temp != mainTid &&
+      thread_care.find(tid_temp) != thread_care.end()) {
+    if (sched_setaffinity(0, sizeof(mask), &mask) == -1) {
+      FILE *fp = fopen("sch_log.txt", "w");
+      fprintf(fp, "Set CPU affinity failue, ERROR:%s\n", strerror(errno));
+      printf("Set CPU affinity failue, ERROR:%s\n", strerror(errno));
+      fclose(fp);
+    }
   }
 
   MEM_BARRIER();
@@ -550,6 +550,9 @@ void instr_LOC(void *func, unsigned int a, unsigned int loc) {
     if ((count > 2 && loc == t_info->kp_thread_array[threadNumber][count - 1] &&
          t_info->kp_thread_array[threadNumber][count - 2] ==
              t_info->kp_thread_array[threadNumber][count - 1])) {
+      return;
+    }
+    if (thread_care.find(threadNumber) == thread_care.end()) {
       return;
     }
     pthread_spin_lock(&thread_count_lock);
