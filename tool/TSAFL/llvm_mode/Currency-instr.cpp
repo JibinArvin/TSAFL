@@ -427,13 +427,11 @@ void init_thread_info(long int tid_temp) {
   if (unlikely(tid_temp == mainTid)) {
     main_create_number = thread_number;
   }
-
   // add create info into t_info
   pthread_spin_lock(&thread_create_join_lock);
   t_info->thread_create_jion[thread_create_join_number] = tid_temp;
   thread_create_join_number++;
   pthread_spin_unlock(&thread_create_join_lock);
-
   if (Ischedule && thread_care.find(main_create_number) == thread_care.end() &&
       thread_care.find(thread_number) != thread_care.end()) {
     tid_to_run++;
@@ -448,7 +446,6 @@ void init_thread_info(long int tid_temp) {
   }
 
   if (Ischedule && thread_care.find(tid_temp) != thread_care.end()) {
-
 #ifdef OUT_DEBUG
     TSF("Seting PSIEruntime for mythreadid: %ld", tid_temp);
 #endif
