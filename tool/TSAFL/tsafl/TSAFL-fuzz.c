@@ -2947,6 +2947,17 @@ abort_calibration:
   return fault;
 }
 
+/** Return a thread_need_care struct which has two location. */
+struct thread_need_care *get_tCare_from_plan(struct scheduel_result *re) {
+  struct thread_need_care *t_care = (struct thread_need_care *)malloc(
+      sizeof(struct thread_need_care) + sizeof(size_t) * 2);
+  t_care->size = 2;
+  for (size_t i = 0; i < CONSIDER_THREAD_NUMBER_HELPER; i++) {
+    t_care->tid_list[i] = re->result_seq[i];
+  }
+  return t_care;
+}
+
 /* Wrapper for the run_target to avoid the resolve the arround. */
 static u8 run_target_with_scheduel(char **argv, u32 timeout, u8 *use_mem,
                                    struct queue_entry *q, u64 dry_run_time) {
@@ -3007,7 +3018,9 @@ static u8 run_target_with_scheduel(char **argv, u32 timeout, u8 *use_mem,
         result->list[i]->entry_size[0] + result->list[i]->entry_size[1];
     if (t_info->kp_mem_size != plan_size)
       t_info->kp_mem_size = plan_size;
-    finish_one_plan_success(i, t_info, plan_size);
+    struct thread_need_care *t_care = get_tCare_from_plan(result->list[i]);
+    finish_one_plan_success(i, t_info, plan_size, *t_care);
+    free(t_care);
     if (fault != FAULT_NONE) {
       final_fault = fault;
     }

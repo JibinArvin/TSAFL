@@ -11,7 +11,7 @@
 },
 {
   "directory": "/workdir/TSAFL/tool/TSAFL/build",
-  "command": "clang++ -I/usr/include/libxml2 -I/workdir/TSAFL/tool/TSAFL  -g -O0 -Wall -std=c++14 -g   -w -o tsafl/CMakeFiles/tsafl.dir/helper.cc.o -c /workdir/TSAFL/tool/TSAFL/tsafl/helper.cc",
+  "command": "clang++ -I/usr/include/libxml2 -I/workdir/TSAFL/tool/TSAFL  -g -O0 -std=c++14 -g -o tsafl/CMakeFiles/tsafl.dir/helper.cc.o -c /workdir/TSAFL/tool/TSAFL/tsafl/helper.cc",
   "file": "/workdir/TSAFL/tool/TSAFL/tsafl/helper.cc"
 },
 {

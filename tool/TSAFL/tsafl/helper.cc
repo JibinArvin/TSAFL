@@ -873,7 +873,7 @@ bool ActionInfo::is_groupKey(size_t n) {
 
 int8_t ActionInfo::is_action_lock(size_t action_number) {
   if (numberToListmap.find(action_number) == numberToListmap.end())
-    printf("[helper] There is no such action;%d", action_number);
+    printf("[helper] There is no such action;%zu", action_number);
   size_t loc_in_list = numberToListmap.at(action_number);
   auto action_t = list.at(loc_in_list).get_lock_type();
   if (action_t == lock_action)
@@ -1644,8 +1644,9 @@ void clear_helper() {
   g_filter_info.clear();
 }
 
-/* This function is used to check how many interesting window exist in plan, And
- * if the number is zero, it will also add it into g_single_info.cks. */
+/** This function is used to check how many interesting window exist in plan,
+ *  And if the number is zero, it will also add it into g_single_info.cks.
+ */
 size_t
 get_meaning_couple_from_v(const tid_ac_v &v,
                           std::set<std::pair<CK_SUM, size_t>> &mem_cksum) {
@@ -1656,11 +1657,15 @@ get_meaning_couple_from_v(const tid_ac_v &v,
     re += is_interesting(item.first, item.second, mem_cksum) ? 1 : 0;
   }
   /* 如果没有进入实际运行阶段，still put it into cks. */
+#ifdef REAL_SCHED
   if (re == 0) {
+#endif
     for (auto item : *res) {
       g_single_time_info.single_wCks.insert({item.first, item.second});
     }
+#ifdef REAL_SCHED
   }
+#endif
   return re;
 }
 
@@ -1683,6 +1688,7 @@ bool is_offense_main(tid_ac_v &que,
   /* Euuu... We must change this! */
   if ((que.back().first) != mainTid)
     return true;
+  return false;
 }
 
 void create_que(const std::vector<std::shared_ptr<SingleThread>> &st_que,
@@ -2570,7 +2576,7 @@ struct single_t_info *get_s_t(struct Thread_info *t_info) {
   }
   if (thread_mem.size() != t_info->final_thread_number) {
     FATAL("[ERROR] get_s_t t_info->final_thread_number don't match! "
-          "Thread_mem.size:%ld, t_info->t_info->final_thread_number:%ld",
+          "Thread_mem.size:%ld, t_info->t_info->final_thread_number:%llu",
           thread_mem.size(), t_info->final_thread_number);
   }
   i = 0;
@@ -2603,7 +2609,7 @@ struct thread_need_care *get_t_n_c(struct Thread_info *t_info,
 
 /* There is always some guy don't use thread_jion, So the to main value is need
  * set by us!*/
-int32_t fix_right_to_mian_end(struct thread_info_scheduel_token *token) {}
+void fix_right_to_mian_end(struct thread_info_scheduel_token *token) {}
 
 /* Generate struct thread_info_scheduel_token from t_info*/
 struct thread_info_scheduel_token *
@@ -2708,7 +2714,7 @@ get_tis_token(const struct Thread_info *const t_info,
       if (s_i->to_main[1] < s_i->to_main[0]) {
         FATAL("The compare failed, the to_main[1]:%d is smaller than "
               "to_main[0]:%d. "
-              "This is unaccpeted! i: %d, token_size:%d",
+              "This is unaccpeted! i: %zu, token_size:%zu",
               s_i->to_main[1], s_i->to_main[0], now, token_size);
       }
     }
@@ -2908,15 +2914,28 @@ int8_t check_plan_result(struct Thread_info *info, struct scheduel_result *plan,
   g_single_time_info.bad_plan_flag = true;
   return 0;
 }
-
+/* NEXT: There are still a lot thing need to check! */
 void finish_one_plan_success(size_t number, struct Thread_info *t_info,
-                             size_t kp_size) {
+                             size_t kp_size, struct thread_need_care *t_care) {
   auto kp = &t_info->kp_mem;
   std::shared_ptr<tid_ac_v> ptr = std::make_shared<tid_ac_v>();
 
+#ifdef TSAFL_CHECK
+  if (t_info->kp_mem_size == 0) {
+    FATAL("The t_info->kp_mem_size is equal to zero, wchich means the tested "
+          "program exit in a different way!");
+  }
+#endif
+  std::set<size_t> thread_set = {};
+  for (size_t i = 0; i < CONSIDER_THREAD_NUMBER_HELPER; i++) {
+    thread_set.insert(t_care->tid_list[i]);
+  }
   for (int32_t i = 0; i < t_info->kp_mem_size; i++) {
     u32 threadid = t_info->kp_mem[i].threadid;
     u32 loc = t_info->kp_mem->loc;
+    if (unlikely(thread_set.find(threadid) == thread_set.end())) {
+      continue;
+    }
     ptr->push_back({threadid, loc});
   }
   g_single_time_info.add_cks(ptr);
@@ -3254,6 +3273,7 @@ int8_t set_queueEntry_interesting_WandC() {
   for (const auto &pair : g_filter_info.cks_q_c) {
     pair.second->sch_interesting = 1;
   }
+  return 1;
 }
 
 /* unfinish clean que!*/
@@ -3421,7 +3441,6 @@ u32 get_max_count_action() { return g_action_info.get_max_count(); }
 
 /* Set q->sch_exec_cksum and q->sch_exec_size by t_info. */
 void fill_que_sch_exeInfo(struct Thread_info *t_info, struct queue_entry *q) {
-  std::set<CK_SUM> set;
   auto res = get_concurHash_from_tInfo(t_info);
   q->sch_exec_cksum = res.first;
   q->sch_exec_size = res.second;
