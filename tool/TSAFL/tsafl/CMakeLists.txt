@@ -1,6 +1,6 @@
 set(CMAKE_BUILD_TYPE DEBUG)
-set(CMAKE_C_COMPILER "clang-14")
-set(CMAKE_CXX_COMPILER "clang++-14")
+set(CMAKE_C_COMPILER "clang")
+set(CMAKE_CXX_COMPILER "clang++")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-pointer-arith -DBIN_PATH=\\\"/usr/local/bin\\\"  -DAFL_PATH=\\\"/usr/local/lib/afl\\\" -DDOC_PATH=\\\"/usr/local/share/doc/afl\\\" ")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -Wall -DLIBXML_STATIC ") # -static

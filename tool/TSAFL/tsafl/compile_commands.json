@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/workdir/TSAFL/tool/TSAFL/build",
+  "command": "/usr/bin/cc -I/usr/include/libxml2 -I/workdir/TSAFL/tool/TSAFL -g -o CMakeFiles/readxml_library.dir/tsafl/readxml.c.o -c /workdir/TSAFL/tool/TSAFL/tsafl/readxml.c",
+  "file": "/workdir/TSAFL/tool/TSAFL/tsafl/readxml.c"
+},
+{
+  "directory": "/workdir/TSAFL/tool/TSAFL/build",
+  "command": "clang -I/usr/include/libxml2 -I/workdir/TSAFL/tool/TSAFL  -Wno-pointer-arith -DBIN_PATH=\\\"/usr/local/bin\\\"  -DAFL_PATH=\\\"/usr/local/lib/afl\\\" -DDOC_PATH=\\\"/usr/local/share/doc/afl\\\"  -g -O0 -Wall -DLIBXML_STATIC  -g   -w -o tsafl/CMakeFiles/tsafl.dir/TSAFL-fuzz.c.o -c /workdir/TSAFL/tool/TSAFL/tsafl/TSAFL-fuzz.c",
+  "file": "/workdir/TSAFL/tool/TSAFL/tsafl/TSAFL-fuzz.c"
+},
+{
+  "directory": "/workdir/TSAFL/tool/TSAFL/build",
+  "command": "clang++ -I/usr/include/libxml2 -I/workdir/TSAFL/tool/TSAFL  -g -O0 -Wall -std=c++14 -g   -w -o tsafl/CMakeFiles/tsafl.dir/helper.cc.o -c /workdir/TSAFL/tool/TSAFL/tsafl/helper.cc",
+  "file": "/workdir/TSAFL/tool/TSAFL/tsafl/helper.cc"
+},
+{
+  "directory": "/workdir/TSAFL/tool/TSAFL/build",
+  "command": "clang -I/usr/include/libxml2 -I/workdir/TSAFL/tool/TSAFL  -Wno-pointer-arith -DBIN_PATH=\\\"/usr/local/bin\\\"  -DAFL_PATH=\\\"/usr/local/lib/afl\\\" -DDOC_PATH=\\\"/usr/local/share/doc/afl\\\"  -g -O0 -Wall -DLIBXML_STATIC  -g   -w -o tsafl/CMakeFiles/tsafl.dir/readxml.c.o -c /workdir/TSAFL/tool/TSAFL/tsafl/readxml.c",
+  "file": "/workdir/TSAFL/tool/TSAFL/tsafl/readxml.c"
+}
+]

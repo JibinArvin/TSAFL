@@ -48,21 +48,25 @@ pthread_spinlock_t thread_count_lock;
 pthread_spinlock_t thread_create_lock;
 pthread_spinlock_t thread_join_lock;
 pthread_spinlock_t thread_create_join_lock;
-
+pthread_spinlock_t thread_care_lock;
 static volatile int count_exec = 0;
 static volatile int thread_create_count = 0;
-static volatile int thread_jion_count = 0;
+// static volatile int thread_jion_count = 0;
 // real peroid number considering 0 this says that start form 0;
 
 static bool Ischedule = false;
 
 // static bool TupleScheduling = false;
-static int num_cpu = 0;                    // number of available CPUs
-static int num_td = 0;                     // number of threads concerned
-static int num_kp = 0;                     // number of kep points per thread
+static int num_cpu = 0; // number of available CPUs
+static int num_td = 0;  // number of threads concerned
+static cpu_set_t mask;
+// static cpu_set_t get;
 static uint64_t PSIEruntime = 1000 * 1000; // nsec
-
+#ifdef MAIN_WAITING
+static int main_sch_start;
+#endif
 static int mainTid;
+static int main_create_number;
 
 // traceEnd函数执行之前std::map就会释放资源，使用map的时候可能由于iter++导致出错，谨慎用
 // std::map would release resource without ASAN
@@ -79,8 +83,8 @@ static std::map<long, int>
 
 static int thread_create_join_number = 0;
 
-static system_clock::time_point startRun;
-static system_clock::time_point endRun;
+// static system_clock::time_point startRun;
+// static system_clock::time_point endRun;
 
 #define THREAD_CARE 2
 static std::unordered_map<u32, u32> thread_care;
@@ -117,15 +121,6 @@ static int get_add_thread_create_count() {
   return res;
 }
 
-/* WAITING...*/
-static int get_add_thread_jion_count() {
-  pthread_spin_lock(&thread_join_lock);
-  int res = thread_jion_count;
-  thread_join_lock++;
-  pthread_spin_unlock(&thread_join_lock);
-  return res;
-}
-
 int DBDSdetectCPUs() {
   int ncpu;
 
@@ -154,23 +149,30 @@ int DBDSdetectCPUs() {
 
   return ncpu;
 }
-
+void traceEnd(void);
 void __attribute__((constructor)) traceBegin(void) {
   /*NOTE: How to solve the maintid loss? */
   /* Insert a instr_PthreadCall after main function, If you want to know more
    * check the passFile(may line 584!). */
   mainTid = gettid();
   tid_to_run = 0;
+  main_create_number = 0;
+#ifdef MAIN_WAITING
+  main_sch_start = 0;
+#endif
+
 #ifdef OUT_DEBUG
   fprintf(stdout, "[OUT_DEBUG] traceBegin.\n");
 #endif
-
+  /* In case the traceEnd don't work! */
+  atexit(traceEnd);
   pthread_spin_init(&thread_count_lock, PTHREAD_PROCESS_SHARED);
   pthread_spin_init(&thread_create_lock, PTHREAD_PROCESS_SHARED);
   pthread_spin_init(&thread_join_lock, PTHREAD_PROCESS_SHARED);
   pthread_spin_init(&thread_create_join_lock, PTHREAD_PROCESS_SHARED);
   pthread_spin_init(&thread_set_lock, PTHREAD_PROCESS_SHARED);
   pthread_spin_init(&threadSelf_lock, PTHREAD_PROCESS_SHARED);
+  pthread_spin_init(&thread_care_lock, PTHREAD_PROCESS_SHARED);
 #ifdef OUT_DEBUG
   fprintf(stdout, "[OUT_DEBUG] finish spinlock init.\n");
 #endif
@@ -232,8 +234,8 @@ void __attribute__((constructor)) traceBegin(void) {
     num_td = t_info->N;
     PSIEruntime = t_info->time;
     /* The deadline time max value is set by the */
-    if (PSIEruntime > 10000000) {
-      PSIEruntime = 10000000;
+    if (PSIEruntime > 1000000) {
+      PSIEruntime = 1000000;
     }
 #ifdef OUT_DEBUG
     TSF("---------Under Ischedule mode!------------");
@@ -245,30 +247,26 @@ void __attribute__((constructor)) traceBegin(void) {
   fprintf(stdout, "[OUT_DEBUG] traceBegin end.\n");
 #endif
 
-// #define TEST_CONNECT
-#ifdef TEST_CONNECT
-  TSF("---------TEST CONNECT--------");
-  if (t_info->test_flag1 == 1) {
-    TSF(" TEST CONNECT right now!");
-    TSF(" test_flag2 is %d now!", t_info->test_flag2);
+  if (Ischedule == true) {
+    printf("cpus: %d\n", num_cpu);
+    CPU_ZERO(&mask);
+    CPU_SET(0, &mask);
   }
-#endif
 }
 
 /* It is very dangerous to use global variables in the destructor function, and
  * it is very easy to get a null value to a unexpected result! */
-void __attribute__((destructor)) traceEnd(void) {
+void traceEnd(void) {
 
 #ifdef DEBUG
   printf("[DEBUG] enter traceEnd\n");
 #endif
   t_info->mainid = mainTid;
-  endRun = system_clock::now(); // 程序结束用时
 
-  auto durationDryRun = duration_cast<microseconds>(endRun - startRun);
-  double DryRunTime = double(durationDryRun.count()) *
-                      microseconds::period::num /
-                      microseconds::period::den; // s为单位
+  // auto durationDryRun = duration_cast<microseconds>(endRun - startRun);
+  // double DryRunTime = double(durationDryRun.count()) *
+  //                     microseconds::period::num /
+  //                     microseconds::period::den; // s为单位
 
   t_info->final_thread_number = get_add_thread_create_count();
 
@@ -301,7 +299,7 @@ void __attribute__((destructor)) traceEnd(void) {
     }
 
     else if (item.second != 1 && item.second != 0)
-      FATAL("item.f: %d, item.second: %d", item.first, item.second);
+      FATAL("item.f: %ld, item.second: %ld", item.first, item.second);
   }
 
   pthread_spin_unlock(&thread_create_join_lock);
@@ -316,6 +314,7 @@ void __attribute__((destructor)) traceEnd(void) {
   pthread_spin_destroy(&thread_join_lock);
   pthread_spin_destroy(&thread_set_lock);
   pthread_spin_destroy(&threadSelf_lock);
+  pthread_spin_destroy(&thread_care_lock);
 #ifdef OUT_DEBUG
   fprintf(stdout, "[OUT_DEBUG] traceEnd end.\n");
   fprintf(stdout, "[OUT_DEBUG] OUT INFO:\n thread_create_join,\n");
@@ -335,7 +334,7 @@ void __attribute__((destructor)) traceEnd(void) {
       int32_t number = t_info->kp_thread_array[i][j];
       if (number == -1)
         break;
-      TSF("threadNumber: %d, count:%d, loc:%d", i, j, number);
+      TSF("threadNumber: %ld, count:%ld, loc:%d", i, j, number);
     }
   }
 #endif
@@ -396,6 +395,7 @@ void init_threadSelf(long int tid_temp) {
 void init_thread_info(long int tid_temp) {
 
   if (Ischedule == true) {
+    pthread_spin_lock(&thread_care_lock);
     if (thread_care.size() == 0) {
 #ifdef OUT_DEBUG
       TSF("Now it's the time init thread_care!");
@@ -404,6 +404,8 @@ void init_thread_info(long int tid_temp) {
         thread_care[t_info->thread_care[i]] = i;
       }
     }
+    t_info->test_flag1 = 1;
+    pthread_spin_unlock(&thread_care_lock);
   }
 
   if (thread_set.count(tid_temp) != 0)
@@ -417,36 +419,50 @@ void init_thread_info(long int tid_temp) {
 
   // set the threadnumber by tid tp mytid
   add_tid_to_threadNumber(tid_temp);
-  int mytid = tid_to_threadNumber[tid_temp];
-  t_info->thread_count_to_tid[mytid] = tid_temp;
+  int thread_number =
+      tid_to_threadNumber[tid_temp]; // The map from std make sure the
+                                     // read action is thread-safety.
+  t_info->thread_count_to_tid[thread_number] = tid_temp; // No range check here!
+
+  if (unlikely(tid_temp == mainTid)) {
+    main_create_number = thread_number;
+  }
 
   // add create info into t_info
   pthread_spin_lock(&thread_create_join_lock);
   t_info->thread_create_jion[thread_create_join_number] = tid_temp;
   thread_create_join_number++;
   pthread_spin_unlock(&thread_create_join_lock);
-  if (Ischedule && tid_temp != mainTid) {
+
+  if (Ischedule && thread_care.find(main_create_number) == thread_care.end() &&
+      thread_care.find(thread_number) != thread_care.end()) {
+    tid_to_run++;
+#ifdef OUT_DEBUG
+    TSF("main_create_number: %d", main_create_number);
+    for (auto item : thread_care) {
+      std::cout << "thread_care: " << item.first << "\n";
+    }
+#endif
+    while (tid_to_run < 2)
+      ;
+  }
+
+  if (Ischedule && thread_care.find(tid_temp) != thread_care.end()) {
 
 #ifdef OUT_DEBUG
-    TSF("Seting PSIEruntime for mythreadid: %d", mytid);
+    TSF("Seting PSIEruntime for mythreadid: %ld", tid_temp);
 #endif
-    if (PSIEruntime <
-        10000) // DBDSruntime is the observed execution time in dry run stage
-      set_sched_dl((uint64_t)(PSIEruntime * 100),
-                   (uint64_t)(PSIEruntime * 1000),
-                   (uint64_t)(PSIEruntime * 1000));
-    else if (10000 <= PSIEruntime && PSIEruntime < 100000)
-      set_sched_dl((uint64_t)(PSIEruntime * 75), (uint64_t)(PSIEruntime * 750),
-                   (uint64_t)(PSIEruntime * 750));
-    else if (100000 <= PSIEruntime && PSIEruntime < 1000000)
-      set_sched_dl((uint64_t)(PSIEruntime * 50), (uint64_t)(PSIEruntime * 500),
-                   (uint64_t)(PSIEruntime * 500));
-    else if (1000000 <= PSIEruntime && PSIEruntime < 2000000)
-      set_sched_dl((uint64_t)(PSIEruntime * 25), (uint64_t)(PSIEruntime * 250),
-                   (uint64_t)(PSIEruntime * 250));
-    else
-      set_sched_dl((uint64_t)(PSIEruntime * 10), (uint64_t)(PSIEruntime * 100),
-                   (uint64_t)(PSIEruntime * 100));
+    set_sched_FIFO();
+    usleep(1000); /* Make sure the setting work!*/
+  }
+
+  if (Ischedule && thread_care.find(tid_temp) != thread_care.end()) {
+    if (sched_setaffinity(0, sizeof(mask), &mask) == -1) {
+      FILE *fp = fopen("sch_log.txt", "w");
+      fprintf(fp, "Set CPU affinity failue, ERROR:%s\n", strerror(errno));
+      printf("Set CPU affinity failue, ERROR:%s\n", strerror(errno));
+      fclose(fp);
+    }
   }
 
   MEM_BARRIER();
@@ -454,7 +470,7 @@ void init_thread_info(long int tid_temp) {
   if (tid_temp != mainTid) {
     int main_thread_number = tid_to_threadNumber[mainTid];
     int count_main = thread_action_count[main_thread_number];
-    t_info->thread_main_eara[mytid][0] = count_main;
+    t_info->thread_main_eara[thread_number][0] = count_main;
   }
 }
 
@@ -552,6 +568,9 @@ void instr_LOC(void *func, unsigned int a, unsigned int loc) {
              t_info->kp_thread_array[threadNumber][count - 1])) {
       return;
     }
+    if (thread_care.find(threadNumber) == thread_care.end()) {
+      return;
+    }
     pthread_spin_lock(&thread_count_lock);
     int number_action = count_exec;
     /* skip the */ /* But need change. */
@@ -616,12 +635,21 @@ void instr_LOC_string(void *func, unsigned int loc) {
                               : -1;
     if (kp_time_loc == -1)
       return;
+
     if (kp_time_loc > THREAD_CARE) {
       FATAL("[Error]: Can't find the right number for  threadNumber: %d "
             ",kp_time_loc: %d",
             threadNumber, kp_time_loc);
     }
     int yield_times = t_info->kp_times[kp_time_loc][count];
+#ifdef MAIN_WAITING
+    if (threadNumber == mainTid && !main_sch_start) {
+      if (yield_times > 0) {
+        usleep(1000); // Make sure that the main thread will wait for others.
+        main_sch_start = 1;
+      }
+    }
+#endif
     while (1) {
       // TSF("Here facing mytid:%d, count:%d, and yield_times: %d", kp_time_loc,
       //     count, yield_times);

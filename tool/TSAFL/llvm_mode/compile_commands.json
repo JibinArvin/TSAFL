@@ -1,0 +1,81 @@
+[{
+  "directory" : "/workdir/TSAFL/tool/TSAFL/llvm_mode",
+  "arguments" : [
+    "clang", "-O3", "-funroll-loops", "-Wall", "-D_FORTIFY_SOURCE=2", "-g",
+    "-Wno-pointer-sign", "-DAFL_PATH=\"/usr/local/lib/afl\"",
+    "-DBIN_PATH=\"/usr/local/bin\"", "-DVERSION=\"\"", "-c", "-o", "test.o",
+    "test.c"
+  ],
+  "file" : "test.c"
+},
+ {
+   "directory" : "/workdir/TSAFL/tool/TSAFL/llvm_mode",
+   "arguments" : [
+     "clang", "-O3", "-funroll-loops", "-Wall", "-D_FORTIFY_SOURCE=2", "-g",
+     "-Wno-pointer-sign", "-DAFL_PATH=\"/usr/local/lib/afl\"",
+     "-DBIN_PATH=\"/usr/local/bin\"", "-DVERSION=\"\"", "CUR-clang-fast.c",
+     "-o", "../CUR-clang-fast"
+   ],
+   "file" : "CUR-clang-fast.c"
+ },
+ {
+   "directory" : "/workdir/TSAFL/tool/TSAFL/llvm_mode",
+   "arguments" : [
+     "clang++",
+     "-I/workdir/TSAFL/clang+llvm/include",
+     "-std=c++14",
+     "-fno-exceptions",
+     "-fno-rtti",
+     "-D_GNU_SOURCE",
+     "-D__STDC_CONSTANT_MACROS",
+     "-D__STDC_FORMAT_MACROS",
+     "-D__STDC_LIMIT_MACROS",
+     "-Wl,-znodelete",
+     "-fno-rtti",
+     "-fpic",
+     "-O0",
+     "-funroll-loops",
+     "-Wall",
+     "-D_FORTIFY_SOURCE=2",
+     "-g",
+     "-Wno-pointer-sign",
+     "-DVERSION=\"\"",
+     "-Wno-variadic-macros",
+     "-shared",
+     "CUR-llvm-pass.so.cc",
+     "-o",
+     "../CUR-llvm-pass.so",
+     "-L/workdir/TSAFL/clang+llvm/lib"
+   ],
+   "file" : "CUR-llvm-pass.so.cc"
+ },
+ {
+   "directory" : "/workdir/TSAFL/tool/TSAFL/llvm_mode",
+   "arguments" : [
+     "clang++", "-O0", "-g", "-O0", "-funroll-loops", "-Wall",
+     "-D_FORTIFY_SOURCE=2", "-g", "-Wno-pointer-sign", "-DVERSION=\"\"",
+     "-Wno-variadic-macros", "-fPIC", "-c", "Currency-instr.cpp", "-o",
+     "../Currency-instr.o"
+   ],
+   "file" : "Currency-instr.cpp"
+ },
+ {
+   "directory" : "/workdir/TSAFL/tool/TSAFL/llvm_mode",
+   "arguments" : [
+     "clang", "-O3", "-funroll-loops", "-Wall", "-D_FORTIFY_SOURCE=2", "-g",
+     "-Wno-pointer-sign", "-DAFL_PATH=\"/usr/local/lib/afl\"",
+     "-DBIN_PATH=\"/usr/local/bin\"", "-DVERSION=\"\"", "test_shm_scheduel.c",
+     "-o", "../test_shm"
+   ],
+   "file" : "test_shm_scheduel.c"
+ },
+ {
+   "directory" : "/workdir/TSAFL/tool/TSAFL/llvm_mode",
+   "arguments" : [
+     "clang", "-O3", "-funroll-loops", "-Wall", "-D_FORTIFY_SOURCE=2", "-g",
+     "-Wno-pointer-sign", "-DAFL_PATH=\"/usr/local/lib/afl\"",
+     "-DBIN_PATH=\"/usr/local/bin\"", "-DVERSION=\"\"", "-m64", "-fPIC", "-c",
+     "afl-llvm-rt.o.c", "-o", "../afl-llvm-rt-64.o", "/dev/null"
+   ],
+   "file" : "afl-llvm-rt.o.c"
+ }]

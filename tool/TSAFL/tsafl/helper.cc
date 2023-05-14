@@ -1364,7 +1364,6 @@ std::pair<int32_t, int32_t> cmp_tid_ac_v(const tid_ac_v *const first,
   return {-1, -1};
 }
 
-// FIXME: need check if is real.
 // TODO:  1. make sure if there are repeated actions be remembered.
 // 2. filter for ques.
 bool check_if_obey(struct Thread_info *t_info,
@@ -2889,9 +2888,7 @@ check_plan_resultc_CC(std::vector<struct Kp_action_info> mem, size_t number) {
 int8_t check_plan_result(struct Thread_info *info, struct scheduel_result *plan,
                          size_t number) {
   std::vector<struct Kp_action_info> mem;
-  for (size_t i = 0; i < SHARE_MEMORY_ARRAY_SIZE_MAX; i++) {
-    if (info->kp_mem[i].threadid == 0 && info->kp_mem[i].loc == 0)
-      break;
+  for (size_t i = 0; i < info->kp_mem_size; i++) {
     mem.push_back(info->kp_mem[i]);
   }
   const std::shared_ptr<tid_ac_v> plan_v = g_single_time_info.result.at(number);
@@ -2917,11 +2914,9 @@ void finish_one_plan_success(size_t number, struct Thread_info *t_info,
   auto kp = &t_info->kp_mem;
   std::shared_ptr<tid_ac_v> ptr = std::make_shared<tid_ac_v>();
 
-  for (int32_t i = 0; i < kp_size; i++) {
+  for (int32_t i = 0; i < t_info->kp_mem_size; i++) {
     u32 threadid = t_info->kp_mem[i].threadid;
     u32 loc = t_info->kp_mem->loc;
-    if (unlikely(threadid == 0 && loc == 0))
-      break;
     ptr->push_back({threadid, loc});
   }
   g_single_time_info.add_cks(ptr);
@@ -3030,9 +3025,7 @@ int8_t check_after_schedule(struct Thread_info *t_info) {
   std::unordered_map<int32_t, size_t> map_mem;
   std::vector<std::vector<int32_t>> mem;
   struct Kp_action_info *ptr = t_info->kp_mem;
-  for (size_t i = 0; i < SHARE_MEMORY_ARRAY_SIZE_MAX; i++) {
-    if (ptr[i].threadid == 0)
-      break;
+  for (size_t i = 0; i < t_info->kp_mem_size; i++) {
     if (map_mem.find(ptr[i].threadid) == map_mem.end()) {
       map_mem[ptr[i].threadid] = mem.size();
       mem.push_back({});
@@ -3130,13 +3123,12 @@ int8_t update_q_cfg(struct queue_entry *q) {
   for (auto &ck : mem) {
     q_info->retire_c(ck);
   }
-
   return 1;
 }
 
 /* Finish one scheduel here!*/
-void finish_one_scheduel_run() {
-  auto ptr_finished_cfg = g_single_time_info.cfg_finish;
+void finish_one_scheduel_run(struct cfg_info_token *cfg_token) {
+  auto ptr_finished_cfg = cfg_token;
   for (size_t i = 0; i < ptr_finished_cfg->size; i++) {
     finish_cfg(ptr_finished_cfg->cksums[i]);
   }

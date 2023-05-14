@@ -1370,7 +1370,7 @@ void clean_xml_info() { clean_xml_config(f_array, v_array, d_array, g_array); }
 EXP_ST void remove_shm_t_info() { shmctl(t_info_id, IPC_RMID, NULL); }
 /* Configure shared memory and virgin_bits. This is called at startup. */
 EXP_ST void setup_shm_t_info(void) {
-  fprintf(stdout, "SETTING UP SHM T INFO!\n");
+  TSF("SETTING UP SHM T INFO!\n");
   u8 *t_info_str;
   key_t key_info = ftok("/tmp", 111);
   /* Not very secuity to set power setting as 0666. */
@@ -2598,14 +2598,14 @@ void insert_scheduel_plan(struct scheduel_result *plan,
       FATAL("plan->create_sequence -1 here!");
     t_info->thread_care[i] = plan->result_seq[i];
   }
-  // for (size_t i = 0; i < plan->entry_size[0]; i++) {
-  //   t_info->kp_times[0][i] = plan->stop_times[i];
-  // }
-  // size_t full_size = plan->entry_size[0] + plan->entry_size[1];
-  // for (size_t i = plan->entry_size[0], j = 0; i < full_size; i++) {
-  //   t_info->kp_times[1][j] = plan->stop_times[i];
-  //   j++;
-  // }
+  for (size_t i = 0; i < plan->entry_size[0]; i++) {
+    t_info->kp_times[0][i] = plan->stop_times[i];
+  }
+  size_t full_size = plan->entry_size[0] + plan->entry_size[1];
+  for (size_t i = plan->entry_size[0], j = 0; i < full_size; i++) {
+    t_info->kp_times[1][j] = plan->stop_times[i];
+    j++;
+  }
   for (size_t i = 0; i < MY_PTHREAD_CREATE_MAX; i++) {
     if (plan->thread_same_period[i] == -1) {
       t_info->thread_same_period_size = i + 1;
@@ -2826,13 +2826,8 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
       u8 hnb = has_new_bits(virgin_bits);
       if (hnb > new_bits)
         new_bits = hnb;
-      if (q->exec_cksum) {
-        FATAL("[ERROR] Calibrate_case find var! WHY!\n");
-        exit(1);
-      } else {
-        q->exec_cksum = cksum;
-        memcpy(first_trace, trace_bits, MAP_SIZE);
-      }
+      q->exec_cksum = cksum;
+      memcpy(first_trace, trace_bits, MAP_SIZE);
     }
   }
 
@@ -2865,6 +2860,12 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
 
   /*JIBIN: Fault will happen if a q have_new_bits but don't have new cur!*/
   if (new_window == 1) {
+    struct single_t_info *s_i_t_cfg = get_s_t(t_info);
+    struct thread_info_scheduel_token *tInfo_token =
+        get_tis_token(t_info, s_i_t_cfg);
+    struct cfg_info_token *cfg_token_finished = generate_finished_cfg(t_info);
+    struct cfg_info_token *cfg_token = generate_cfg_token(t_info);
+
     TSF("Find a new seed with new_window!");
     u32 use_special_timeout =
         use_tmout * 10000000 < UINT32_MAX
@@ -2880,16 +2881,13 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
     }
     printf("new_fault : %d ", sch_fault);
     fill_que_sch_exeInfo(t_info, q);
-    struct single_t_info *s_i_t_cfg = get_s_t(t_info);
-    struct thread_info_scheduel_token *cfg_tInfo_token =
-        get_tis_token(t_info, s_i_t_cfg);
-    fill_queEntry_sInfo(q, cfg_tInfo_token);
+    fill_queEntry_sInfo(q, cfg_token);
     /* update w and cfg map!*/
     update_q_cfg(q);
     update_q_window(q);
-    finish_one_scheduel_run();
+    finish_one_scheduel_run(cfg_token_finished);
     free(s_i_t_cfg);
-    free(cfg_tInfo_token);
+    free(tInfo_token);
   }
 
   /* OK, let's collect some stats about the performance of this test case.
@@ -3007,6 +3005,8 @@ static u8 run_target_with_scheduel(char **argv, u32 timeout, u8 *use_mem,
      * waiting next step.*/
     size_t plan_size =
         result->list[i]->entry_size[0] + result->list[i]->entry_size[1];
+    if (t_info->kp_mem_size != plan_size)
+      t_info->kp_mem_size = plan_size;
     finish_one_plan_success(i, t_info, plan_size);
     if (fault != FAULT_NONE) {
       final_fault = fault;
@@ -8657,7 +8657,7 @@ int main(int argc, char **argv) {
   get_core_count();
 
 #ifdef HAVE_AFFINITY
-  bind_to_free_cpu();
+  // bind_to_free_cpu();
 #endif /* HAVE_AFFINITY */
 
   check_crash_handling();

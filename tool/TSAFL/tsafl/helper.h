@@ -3,9 +3,9 @@
 #ifndef __AFL_HELPER_H__
 #define __AFL_HELPER_H__
 
-#include "llvm_mode/Currency-instr.h"
-#include "readxml.h"
-#include "types.h"
+#include "../llvm_mode/Currency-instr.h"
+#include "../readxml.h"
+#include "../types.h"
 #include <stddef.h>
 #include <stdint.h>
 #define AFL_LLVM_PASS
@@ -152,7 +152,7 @@ int8_t check_plan_result(struct Thread_info *info, struct scheduel_result *plan,
 int8_t if_good_plan_now(size_t number);
 void finish_one_plan_success(size_t number, struct Thread_info *t_info,
                              size_t kp_size);
-void finish_one_scheduel_run();
+void finish_one_scheduel_run(struct cfg_info_token *cfg_token);
 int8_t fill_queEntry_sInfo(struct queue_entry *q,
                            struct cfg_info_token *cfg_tInfo_token);
 int8_t store_info_preSchedule(struct Thread_info *t_info);
