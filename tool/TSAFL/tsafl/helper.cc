@@ -3123,13 +3123,12 @@ int8_t update_q_cfg(struct queue_entry *q) {
   for (auto &ck : mem) {
     q_info->retire_c(ck);
   }
-
   return 1;
 }
 
 /* Finish one scheduel here!*/
-void finish_one_scheduel_run() {
-  auto ptr_finished_cfg = g_single_time_info.cfg_finish;
+void finish_one_scheduel_run(struct cfg_info_token *cfg_token) {
+  auto ptr_finished_cfg = cfg_token;
   for (size_t i = 0; i < ptr_finished_cfg->size; i++) {
     finish_cfg(ptr_finished_cfg->cksums[i]);
   }

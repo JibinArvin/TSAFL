@@ -5,7 +5,8 @@
     "editor.defaultFormatter": "seaube.clangformat"
   },
   "[c]": {
-    "editor.defaultFormatter": "seaube.clangformat"
+
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
   },
   "[python]": {
     "editor.defaultFormatter": "seaube.clangformat"
