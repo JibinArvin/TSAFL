@@ -2860,6 +2860,12 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
 
   /*JIBIN: Fault will happen if a q have_new_bits but don't have new cur!*/
   if (new_window == 1) {
+    struct single_t_info *s_i_t_cfg = get_s_t(t_info);
+    struct thread_info_scheduel_token *tInfo_token =
+        get_tis_token(t_info, s_i_t_cfg);
+    struct cfg_info_token *cfg_token_finished = generate_finished_cfg(t_info);
+    struct cfg_info_token *cfg_token = generate_cfg_token(t_info);
+
     TSF("Find a new seed with new_window!");
     u32 use_special_timeout =
         use_tmout * 10000000 < UINT32_MAX
@@ -2875,17 +2881,13 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
     }
     printf("new_fault : %d ", sch_fault);
     fill_que_sch_exeInfo(t_info, q);
-    struct single_t_info *s_i_t_cfg = get_s_t(t_info);
-    struct thread_info_scheduel_token *cfg_tInfo_token =
-        get_tis_token(t_info, s_i_t_cfg);
-    // NEXT:
-    fill_queEntry_sInfo(q, cfg_tInfo_token);
+    fill_queEntry_sInfo(q, cfg_token);
     /* update w and cfg map!*/
     update_q_cfg(q);
     update_q_window(q);
-    finish_one_scheduel_run();
+    finish_one_scheduel_run(cfg_token_finished);
     free(s_i_t_cfg);
-    free(cfg_tInfo_token);
+    free(tInfo_token);
   }
 
   /* OK, let's collect some stats about the performance of this test case.
