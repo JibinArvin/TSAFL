@@ -672,7 +672,7 @@ public:
   std::set<std::vector<std::pair<size_t, size_t>>> useds;
   std::set<std::pair<size_t, size_t>> res_set;
   std::shared_ptr<Working_info> w_info;
-  std::vector<std::shared_ptr<SingleThread>> st_que;
+  std::vector<SingleThread> st_que;
   std::set<std::pair<CK_SUM, size_t>> single_wCks;
   std::set<std::pair<CK_SUM, size_t>> thread_cks;
   struct cfg_info_token *cfg;
@@ -680,18 +680,14 @@ public:
   bool bad_plan_flag; /* Use to notify if there had a bad plan! */
 
   SingleTimeInfo()
-      : result({}), useds({}), res_set(), w_info(), st_que(), single_wCks({}),
+      : result({}), useds({}), res_set(), w_info(), single_wCks({}),
         thread_cks({}), cfg(nullptr), cfg_finish(nullptr) {}
 
   void remove_useless_var_in_set(std::set<VAR_TYPE> &set) const;
 
   void add_info(std::set<std::pair<size_t, size_t>> &res_set,
                 std::shared_ptr<Working_info> w_info,
-                std::vector<std::shared_ptr<SingleThread>> &st_que);
-
-  void out_info(std::set<std::pair<size_t, size_t>> &res_set,
-                std::shared_ptr<Working_info> &w_info,
-                std::vector<std::shared_ptr<SingleThread>> &st_que);
+                std::vector<SingleThread> &st_que);
 
   void clear();
 
@@ -786,7 +782,6 @@ void SingleTimeInfo::clear() {
   useds.clear();
   st_que.clear();
   w_info = {};
-  st_que.clear();
   single_wCks.clear();
   thread_cks.clear();
   bad_plan_flag = false;
@@ -806,29 +801,15 @@ void SingleTimeInfo::move_and_build_result(std::vector<tid_ac_v> &re) {
   }
 }
 
-void SingleTimeInfo::add_info(
-    std::set<std::pair<size_t, size_t>> &res_set_in,
-    std::shared_ptr<Working_info> w_info_in,
-    std::vector<std::shared_ptr<SingleThread>> &st_que_in) {
+void SingleTimeInfo::add_info(std::set<std::pair<size_t, size_t>> &res_set_in,
+                              std::shared_ptr<Working_info> w_info_in,
+                              std::vector<SingleThread> &st_que_in) {
 
   res_set = std::set<std::pair<size_t, size_t>>(res_set_in);
   w_info = w_info_in;
-  st_que.resize(st_que_in.size());
   for (size_t i = 0; i < st_que_in.size(); i++) {
-    st_que[i] = std::move(st_que_in[i]);
+    st_que.push_back(st_que_in[i]);
   }
-}
-
-void SingleTimeInfo::out_info(
-    std::set<std::pair<size_t, size_t>> &res_set_IN,
-    std::shared_ptr<Working_info> &w_info_IN,
-    std::vector<std::shared_ptr<SingleThread>> &st_que_IN) {
-  res_set_IN = res_set;
-  w_info_IN = w_info;
-  for (auto &item : st_que) {
-    st_que_IN.push_back(std::move(item));
-  }
-  st_que.clear();
 }
 
 static SingleTimeInfo g_single_time_info = SingleTimeInfo();
@@ -1083,9 +1064,9 @@ void build_actionInfo(struct function_array *f_array,
 class SingleThread {
 public:
   SingleThread(size_t start, size_t end, size_t size, size_t tid)
-      : start(start), end(end), tid(tid), size(size), loc(0), list({}),
-        is_main(false), to_main(), signal_list({}) {}
-  SingleThread() : start(0), end(0), size(0), loc(0), list({}) {}
+      : start(start), end(end), tid(tid), size(size), loc(0), list(),
+        is_main(false), to_main(), signal_list() {}
+  SingleThread() : start(0), end(0), size(0), loc(0), list(), signal_list() {}
   void add_list(int32_t action);
   void dump();
   int32_t into_squence(std::vector<std::pair<size_t, size_t>> &que);
@@ -1093,16 +1074,24 @@ public:
   void remove_element_fromLlist(std::vector<size_t> &locs);
   void init_signal_list_byV(const std::vector<int32_t> &v);
   void switch_signal_list(std::vector<int32_t> &v);
-  std::vector<size_t> list;
-  std::vector<int32_t> signal_list;
   size_t start;
   size_t end;
   size_t tid;
   const size_t size;
   int32_t loc;
   bool is_main;
+  std::vector<size_t> list;
+  std::vector<int32_t> signal_list;
   std::pair<size_t, size_t> to_main;
+  ~SingleThread();
 };
+
+SingleThread::~SingleThread() {
+  list.clear();
+  signal_list.clear();
+  list.shrink_to_fit();
+  signal_list.shrink_to_fit();
+}
 
 void SingleThread::switch_signal_list(std::vector<int32_t> &v) {
   /* Some check! */
@@ -1207,11 +1196,9 @@ public:
   /* Extra thread need care from t_n_c*/
   void generate_interesting(const struct thread_need_care *t_n_c);
   /* make sure the schedueled thread is in same time space!*/
-  void rebuild_relation_map(
-      const std::vector<std::shared_ptr<SingleThread>> &st_que);
+  void rebuild_relation_map(const std::vector<SingleThread> &st_que);
   void generate_interesting_pair(std::set<std::pair<size_t, size_t>> &res_set);
-  void generate_start_same_time(
-      const std::vector<std::shared_ptr<SingleThread>> &st_que);
+  void generate_start_same_time(const std::vector<SingleThread> &st_que);
 };
 
 void Working_info::generate_interesting_pair(
@@ -1242,17 +1229,17 @@ void Working_info::generate_interesting(const struct thread_need_care *t_n_c) {
 }
 
 void Working_info::rebuild_relation_map(
-    const std::vector<std::shared_ptr<SingleThread>> &st_que) {
+    const std::vector<SingleThread> &st_que) {
   for (size_t i = 0; i < st_que.size(); i++) {
-    if (st_que[i]->is_main)
+    if (st_que[i].is_main)
       continue;
-    interesting_relation[st_que[i]->tid] = {};
+    interesting_relation[st_que[i].tid] = {};
     for (size_t j = i + 1; j < st_que.size(); j++) {
-      if (st_que[j]->is_main)
+      if (st_que[j].is_main)
         continue;
-      if (std::max(st_que[i]->start, st_que[j]->start) <
-          std::min(st_que[i]->end, st_que[j]->end)) {
-        interesting_relation[st_que[i]->tid].insert(st_que[j]->tid);
+      if (std::max(st_que[i].start, st_que[j].start) <
+          std::min(st_que[i].end, st_que[j].end)) {
+        interesting_relation[st_que[i].tid].insert(st_que[j].tid);
       }
     }
   }
@@ -1263,44 +1250,41 @@ void Working_info::rebuild_relation_map(
 }
 
 void Working_info::generate_start_same_time(
-    const std::vector<std::shared_ptr<SingleThread>> &st_que) {
+    const std::vector<SingleThread> &st_que) {
 #ifdef OUT_DEBUG
   std::cout << "[DEBUG] Working_info::generate_start_same_time start!"
             << std::endl;
 #endif
   for (size_t i = 0; i < st_que.size(); i++) {
-    interesting_relation[st_que[i]->tid] = {};
+    interesting_relation[st_que[i].tid] = {};
     for (size_t j = 0; j < st_que.size(); j++) {
-      if (st_que[j]->tid == st_que[i]->tid)
+      if (st_que[j].tid == st_que[i].tid)
         continue;
-      if (st_que[i]->start == st_que[j]->start) {
-        interesting_relation[st_que[i]->tid].insert(st_que[j]->tid);
+      if (st_que[i].start == st_que[j].start) {
+        interesting_relation[st_que[i].tid].insert(st_que[j].tid);
       }
     }
   }
 }
 
-std::unique_ptr<SingleThread>
-build_from_token(const struct single_info_token *token) {
+SingleThread build_sT_from_token(const struct single_info_token *token) {
   size_t start = token->start;
   size_t end = token->end;
 
-  auto res = std::make_unique<SingleThread>(start, end, token->action_size,
-                                            token->tid);
+  auto res = SingleThread(start, end, token->action_size, token->tid);
   for (int32_t i = 0; i < (int32_t)token->action_size; i++) {
-    res->add_list(token->actions[i]);
+    res.add_list((size_t)(token->actions[i]));
   }
-  res->is_main = token->is_main;
+  res.is_main = token->is_main;
   return res;
 }
 
-size_t
-get_max_size_from_ques(const std::vector<std::shared_ptr<SingleThread>> &st_que,
-                       const std::vector<size_t> &loc) {
+size_t get_max_size_from_ques(const std::vector<SingleThread> &st_que,
+                              const std::vector<size_t> &loc) {
   size_t res = 0;
   std::for_each(loc.begin(), loc.end(),
                 [&res, &st_que](const unsigned long &number) {
-                  res += st_que[number]->size;
+                  res += st_que[number].size;
                 });
 #ifdef OUT_DEBUG
   std::cout << "[DEBUG] get_max_size_from_ques->res:  " << res << std::endl;
@@ -1447,10 +1431,11 @@ void leave_single_times() { g_single_time_info.clear(); }
 /* Used for generate the basic info just for single times. */
 void generate_basic_info(struct thread_info_scheduel_token *token,
                          std::shared_ptr<Working_info> w_info,
-                         std::vector<std::shared_ptr<SingleThread>> &st_que,
+                         std::vector<SingleThread> &st_que,
                          const struct thread_need_care *t_n_c) {
   for (size_t i = 0; i < token->size; i++) {
-    st_que.push_back(build_from_token(&token->list[i]));
+    auto st = build_sT_from_token(&token->list[i]);
+    st_que.emplace_back(st);
   }
 #ifdef OUT_DEBUG
   std::cout << "[DEBUG] generate_basic_info add st_que finished! size:"
@@ -1691,7 +1676,7 @@ bool is_offense_main(tid_ac_v &que,
   return false;
 }
 
-void create_que(const std::vector<std::shared_ptr<SingleThread>> &st_que,
+void create_que(std::vector<SingleThread> &st_que,
                 const std::vector<size_t> &loc,
                 std::vector<std::vector<std::pair<size_t, size_t>>> &final_list,
                 tid_ac_v &res, size_t max_size, size_t size,
@@ -1707,14 +1692,14 @@ void create_que(const std::vector<std::shared_ptr<SingleThread>> &st_que,
     return;
   }
   for (const auto &item : loc) {
-    int32_t len_plus = st_que[item]->into_squence(res);
+    int32_t len_plus = st_que[item].into_squence(res);
     if (len_plus > 0) {
       create_que(st_que, loc, final_list, res, max_size, size + len_plus,
                  mem_cksum);
       for (size_t i = 0; i < len_plus; i++) {
         res.pop_back();
       }
-      st_que[item]->back_one_step(len_plus);
+      st_que[item].back_one_step(len_plus);
     }
   }
 }
@@ -1952,9 +1937,8 @@ void color_unconnected_action(Ptr_i_que interesting_ques,
 }
 
 /* Plz take main thread as a special funtion!*/
-Ptr_i_que
-color_que_first(struct thread_info_scheduel_token *token,
-                const std::vector<std::shared_ptr<SingleThread>> &st_que) {
+Ptr_i_que color_que_first(struct thread_info_scheduel_token *token,
+                          const std::vector<SingleThread> &st_que) {
   /* Init the I_q firstly. */
 
   Ptr_i_que I_q = std::make_shared<std::vector<std::vector<int32_t>>>();
@@ -2145,12 +2129,12 @@ std::pair<size_t, size_t> value_two_interesting_que(std::vector<int32_t> &I_1,
 }
 
 /* Add initial plan to st_que! */
-void add_initial_plan_st_que(std::vector<std::shared_ptr<SingleThread>> &st_que,
+void add_initial_plan_st_que(std::vector<SingleThread> &st_que,
                              Ptr_i_que &I_q) {
   /* Just use in generate_que, be careful! */
   int counter = 0;
   for (const auto &v : *I_q) {
-    st_que[counter]->init_signal_list_byV(v);
+    st_que[counter].init_signal_list_byV(v);
     counter++;
   }
   // std::cout << "st_ques.size()" << st_que.size() << std::endl;
@@ -2160,18 +2144,18 @@ void add_initial_plan_st_que(std::vector<std::shared_ptr<SingleThread>> &st_que,
 }
 
 /* Check the different data if follow the baic rule here. */
-void check_if_obey_basic_rule(
-    struct thread_info_scheduel_token *token, Ptr_i_que &I_q,
-    std::vector<std::shared_ptr<SingleThread>> &st_que) {
+void check_if_obey_basic_rule(struct thread_info_scheduel_token *token,
+                              Ptr_i_que &I_q,
+                              std::vector<SingleThread> &st_que) {
   for (size_t i = 0; i < token->size; i++) {
     struct single_info_token *s_i_t = &token->list[i];
     size_t s_size = s_i_t->action_size;
     int64_t s_tid = s_i_t->tid;
     if (I_q->at(i).size() != s_size)
       FATAL("I_q don't fit the token info!");
-    if (st_que[i]->size != s_size)
+    if (st_que[i].size != s_size)
       FATAL("st_que[i]->size don't fit the token info!");
-    if (st_que[i]->tid != s_tid)
+    if (st_que[i].tid != s_tid)
       FATAL("st_que[i]->tid don't fit the token info!");
   }
 }
@@ -2189,8 +2173,7 @@ void generate_que(struct scheduel_result_list **result_ptr,
                   struct thread_info_scheduel_token *token,
                   struct thread_need_care *t_n_c) {
   std::shared_ptr<Working_info> w_info = std::make_shared<Working_info>();
-  std::vector<std::shared_ptr<SingleThread>> st_que;
-  // NEXT:
+  std::vector<SingleThread> st_que;
   size_t size_t_n_c = t_n_c->size;
   auto tid_number_map = std::make_shared<std::unordered_map<int64_t, size_t>>();
   int64_t j = 0;
@@ -2203,7 +2186,7 @@ void generate_que(struct scheduel_result_list **result_ptr,
   std::unordered_map<size_t, size_t> st_map;
   size_t i = 0;
   for (auto const &st : st_que) {
-    st_map.insert({st->tid, i++});
+    st_map.insert({st.tid, i++});
   }
 #ifdef OUT_DEBUG
   std::cout << "[DEBUG] before color the ques." << std::endl;
@@ -2268,12 +2251,12 @@ void generate_que(struct scheduel_result_list **result_ptr,
       }
     }
 
-    st_que[first_loc]->switch_signal_list(I_q1);
-    st_que[second_loc]->switch_signal_list(I_q2);
+    st_que[first_loc].switch_signal_list(I_q1);
+    st_que[second_loc].switch_signal_list(I_q2);
     /* Finish one part of trash, It's another part now!（￣ε（#￣）*/
     create_que(st_que, trans, final_list, temp, max_size, 0, mem_cksum);
-    st_que[first_loc]->switch_signal_list(I_q1);
-    st_que[second_loc]->switch_signal_list(I_q2);
+    st_que[first_loc].switch_signal_list(I_q1);
+    st_que[second_loc].switch_signal_list(I_q2);
   }
 
   mem_cksum.clear();
@@ -2416,7 +2399,7 @@ u8 check_t_info(struct Thread_info *t_info) {
 
   for (size_t i = 0; i < 4 * MY_PTHREAD_CREATE_MAX; i++) {
     int64_t id = t_info->thread_create_jion[i];
-    if (id == 0)
+    if (id == -1)
       break;
     int64_t abs_thread_id = std::abs(id);
     if (thread_counter.find(abs_thread_id) == thread_counter.end()) {
@@ -2597,8 +2580,7 @@ struct thread_need_care *get_t_n_c(struct Thread_info *t_info,
   ;
   assert(s_t != NULL);
   struct thread_need_care *res = (struct thread_need_care *)malloc(
-      sizeof(struct thread_need_care) +
-      sizeof(unsigned int) * s_t->thread_number);
+      sizeof(struct thread_need_care) + sizeof(int64_t) * s_t->thread_number);
   res->size = s_t->thread_number;
 
   for (int32_t i = 0; i < s_t->thread_number; i++) {
@@ -2855,7 +2837,8 @@ int8_t if_good_plan_now(size_t number) {
   return check_plan_good(g_single_time_info.result.at(number), number);
 }
 
-/* Find the wrong place of the exe result. */
+/* Find the wrong place of the exe result.*/
+/* NEXT: change the two check funtion.*/
 std::pair<std::pair<int64_t, int64_t>, OP_TYPE>
 check_plan_resultc_CC(std::vector<struct Kp_action_info> mem, size_t number) {
   using res_type = std::pair<std::pair<int64_t, int64_t>, OP_TYPE>;
@@ -2874,7 +2857,7 @@ check_plan_resultc_CC(std::vector<struct Kp_action_info> mem, size_t number) {
   if (wrong_loc == mem.size())
     return res;
   int32_t front = -1, end = -1;
-  size_t thread_name_loc = (*plan)[wrong_loc].second, tmp = thread_name_loc;
+  int32_t thread_name_loc = (*plan)[wrong_loc].second, tmp = thread_name_loc;
   for (tmp = tmp - 1; tmp >= 0; tmp--) {
     if ((*plan)[tmp].first != tmp) {
       front = tmp;
