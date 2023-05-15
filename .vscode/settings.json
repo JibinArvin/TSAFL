@@ -1,13 +1,12 @@
 {
-  "cmake.sourceDirectory": "${workspaceFolder}/tool/TSAFL/tsafl",
   "editor.formatOnSave": true,
   "[cpp]": {
-    "editor.defaultFormatter": "seaube.clangformat"
+    "editor.defaultFormatter": "xaver.clang-format"
   },
   "[c]": {
     "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
   },
   "[python]": {
-    "editor.defaultFormatter": "seaube.clangformat"
+    "editor.defaultFormatter": "xaver.clang-format"
   },
 }
