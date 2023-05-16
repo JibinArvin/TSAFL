@@ -183,13 +183,9 @@ bool CURPass::runOnModule(Module &M) {
   LLVMContext &C = M.getContext();
   IntegerType *Int8Ty = IntegerType::getInt8Ty(C);
   IntegerType *Int32Ty = IntegerType::getInt32Ty(C);
-  IntegerType *Int64Ty = IntegerType::getInt64Ty(C);
-  PointerType *CharPtrTy = PointerType::getUnqual(Int8Ty);
-  Type *VoidTy = Type::getVoidTy(C);
 
   /* Show a banner */
   outs() << "Using CUR-LLVM-PASS\n";
-  IntegerType *Int16Ty = IntegerType::getInt32Ty(C);
 
   /* Show a banner */
 
@@ -514,7 +510,6 @@ bool CURPass::runOnModule(Module &M) {
     for (auto &FF : M) {
       std::string LastLocString = "";
       llvm::InlineFunctionInfo ifi;
-      llvm::CallInst *call;
       srand(time(0));
       for (auto &BB : FF) {
         bool static_interesting = false;
@@ -614,7 +609,6 @@ bool CURPass::runOnModule(Module &M) {
       retArg.push_back(CurFuncVa);
       IRBuilder<> IRB(&(*FIP));
       IRB.CreateCall(instr_CallFunc, retArg);
-      Function *curF = &*function;
       if (function->getName() == "main") {
         // continue;
       }

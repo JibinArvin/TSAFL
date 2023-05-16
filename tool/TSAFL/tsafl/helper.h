@@ -68,7 +68,7 @@ struct thread_info_scheduel_token {
 /**/
 struct thread_need_care {
   size_t size;
-  size_t tid_list[];
+  int64_t tid_list[];
 };
 
 #define CONSIDER_THREAD_NUMBER_HELPER 2
@@ -151,7 +151,7 @@ int8_t check_plan_result(struct Thread_info *info, struct scheduel_result *plan,
                          size_t number);
 int8_t if_good_plan_now(size_t number);
 void finish_one_plan_success(size_t number, struct Thread_info *t_info,
-                             size_t kp_size, struct thread_need_care t_care);
+                             size_t kp_size, struct thread_need_care *t_care);
 void finish_one_scheduel_run(struct cfg_info_token *cfg_token);
 int8_t fill_queEntry_sInfo(struct queue_entry *q,
                            struct cfg_info_token *cfg_tInfo_token);

@@ -62,11 +62,10 @@
 #include <sys/wait.h>
 
 /* added by dongjibin */
+#include "../llvm_mode/Currency-instr.h"
 #include "../readxml.h"
 #include "helper.h"
 #include "limits.h"
-/*wrong way to include*/ // TODO:
-#include "../llvm_mode/Currency-instr.h"
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <sys/sysctl.h>
 #endif /* __APPLE__ || __FreeBSD__ || __OpenBSD__ */
@@ -2879,7 +2878,7 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
       schedule_var = 0;
       q->schedule_var_be = 1;
     }
-    printf("new_fault : %d ", sch_fault);
+    TSF("new_fault : %d ", sch_fault);
     fill_que_sch_exeInfo(t_info, q);
     fill_queEntry_sInfo(q, cfg_token);
     /* update w and cfg map!*/
@@ -3019,7 +3018,7 @@ static u8 run_target_with_scheduel(char **argv, u32 timeout, u8 *use_mem,
     if (t_info->kp_mem_size != plan_size)
       t_info->kp_mem_size = plan_size;
     struct thread_need_care *t_care = get_tCare_from_plan(result->list[i]);
-    finish_one_plan_success(i, t_info, plan_size, *t_care);
+    finish_one_plan_success(i, t_info, plan_size, t_care);
     free(t_care);
     if (fault != FAULT_NONE) {
       final_fault = fault;
