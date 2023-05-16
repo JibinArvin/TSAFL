@@ -3,3 +3,4 @@ clang+llvm
 .clangd/
 build/
 __pycache__/
+.ninja_*
