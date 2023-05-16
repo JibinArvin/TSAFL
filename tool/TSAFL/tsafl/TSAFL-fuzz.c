@@ -62,11 +62,10 @@
 #include <sys/wait.h>
 
 /* added by dongjibin */
+#include "../llvm_mode/Currency-instr.h"
 #include "../readxml.h"
 #include "helper.h"
 #include "limits.h"
-/*wrong way to include*/ // TODO:
-#include "../llvm_mode/Currency-instr.h"
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <sys/sysctl.h>
 #endif /* __APPLE__ || __FreeBSD__ || __OpenBSD__ */

@@ -1,11 +1,11 @@
-FROM ubuntu:23.04
+FROM ubuntu:22.04
 RUN cp /etc/apt/sources.list /etc/apt/sources.list.bak
 RUN sed -i s@/security.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list
 RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list
 RUN apt-get clean
 RUN apt-get update --fix-missing
 
-RUN apt-get install -y wget python3 clang-14 python3-pip git unzip zsh python-is-python3 python2 build-essential apt-utils tmux cmake libtool libtool-bin automake autoconf autotools-dev m4 autopoint libboost-dev help2man gnulib bison flex texinfo zlib1g-dev libexpat1-dev libfreetype6 dos2unix libfreetype6-dev libbz2-dev liblzo2-dev libtinfo-dev libssl-dev pkg-config libswscale-dev libarchive-dev liblzma-dev liblz4-dev doxygen vim intltool gcc-multilib libxml2 libxml2-dev sudo --fix-missing
+RUN apt-get install -y wget python3 clang-14 python3-pip git unzip zsh python-is-python3 python2 build-essential apt-utils tmux cmake libtool libtool-bin automake autoconf autotools-dev m4 autopoint libboost-dev help2man gnulib bison flex texinfo zlib1g-dev libexpat1-dev libfreetype6 dos2unix libfreetype6-dev libbz2-dev liblzo2-dev libtinfo-dev libssl-dev pkg-config libswscale-dev libarchive-dev liblzma-dev liblz4-dev doxygen vim intltool gcc-multilib libxml2 libxml2-dev --fix-missing
 
 RUN mkdir -p /workdir/tsafl
 

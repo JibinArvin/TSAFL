@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void format_function_arrary();
-static void clean_v_array();
+static void format_function_arrary(struct function_array *f_array);
+static void clean_v_array(struct variable_array *v_array);
 static int parse_distance_child(xmlDocPtr doc, xmlNodePtr cur,
                                 struct distance_container *dis_node);
 static int parse_function_node(xmlDocPtr doc, xmlNodePtr cur,
