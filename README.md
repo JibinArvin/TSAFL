@@ -1,5 +1,6 @@
 # TSAFL: a thread sensitive Fuzzer [Broken Version]
-The tool is just a draft and broken version right now, we will fix it as soon as possible.
+## The tool is just a draft and broken version right now, we will fix it as soon as possible. 
+
 TSAFL is a thread sensitive Fuzzer based on AFL, which use some optimized strategy to imporve the performance of fuzz on concurrent program.
 This repository provides the source code of TSAFL.
 
