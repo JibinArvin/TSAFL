@@ -32,5 +32,7 @@ $ROOT_DIR/tool/staticAnalysis/staticAnalysis.sh uaf
 # complie the instrumented program with ASAN
 export Con_PATH=$ROOT_DIR/test/UAF/ConConfig.uaf
 export ConFile_PATH=$ROOT_DIR/test/UAF/config.txt
+$ROOT_DIR/tool/TSAFL/CUR-clang-fast -g -o0 -c ./uaf.c -o uaf.o -fsanitize=address
+clang++ ./uaf.o $ROOT_DIR/tool/TSAFL/Currency-instr.o $ROOT_DIR/tool/TSAFL/afl-llvm-rt.o -g -o0 -o uaf -lpthread -ldl -fsanitize=address
 # $ROOT_DIR/tool/TSAFL/CUR-clang-fast -g -c ./uaf.c -o uaf.o
 # clang++ ./uaf.o $ROOT_DIR/tool/TSAFL/Currency-instr.o -g -o uaf -lpthread -ldl

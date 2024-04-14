@@ -40,5 +40,13 @@
             "cwd": "/workdir/tsafl-test-files/test_tsafl",
             "args": ""
         },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "uaf",
+            "program": "/home/dong/workdir/code/TSAFL/test/UAF/uaf",
+            "cwd": "/home/dong/workdir/code/TSAFL/test/UAF/",
+            "args": ""
+        },
     ]
 }

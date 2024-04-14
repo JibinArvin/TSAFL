@@ -30,7 +30,7 @@ void *t2(void *data) {
       }
 }
 
-void useless();
+void useless(){};
 int main(int argc, char **argv) {
   printf("start\n");
   int a = 0;

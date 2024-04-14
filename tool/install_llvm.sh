@@ -39,19 +39,18 @@ LLVM_DEP_URL=https://releases.llvm.org/${LLVM_VER}
 
 if [ $(command uname) = "Darwin" ]; then
 	# For Mac
-	wget -c https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-apple-darwin.tar.xz
-	tar -C ${PREFIX} -xf clang+llvm-12.0.1-x86_64-apple-darwin.tar.xz
-	rm clang+llvm-12.0.1-x86_64-apple-darwin.tar.xz
+	wget -c https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz
+	tar -C ${PREFIX} -xf clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz
+	rm clang+llvm-10.0.0-x86_64-apple-darwin.tar.xz
 	rm -rf ${PREFIX}/clang+llvm
-	mv ${PREFIX}/clang+llvm-12.0.1-x86_64-apple-darwin ${PREFIX}/clang+llvm
+	mv ${PREFIX}/clang+llvm-10.0.0-x86_64-apple-darwin ${PREFIX}/clang+llvm
 
 else
 	# For Linux
-	wget -c https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz
-	tar -C ${PREFIX} -xf clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz
-	rm clang+llvm-12.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz
+	wget -c https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz
+	tar -C ${PREFIX} -xf clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz
+	rm clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz
 	rm -rf ${PREFIX}/clang+llvm
-	mv ${PREFIX}/clang+llvm-12.0.1* ${PREFIX}/clang+llvm
+	mv ${PREFIX}/clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04 ${PREFIX}/clang+llvm
 fi
-
 set +x

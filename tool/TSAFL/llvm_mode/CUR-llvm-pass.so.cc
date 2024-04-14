@@ -183,7 +183,7 @@ bool CURPass::runOnModule(Module &M) {
   LLVMContext &C = M.getContext();
   IntegerType *Int8Ty = IntegerType::getInt8Ty(C);
   IntegerType *Int32Ty = IntegerType::getInt32Ty(C);
-
+  // IntegerType *Int64Ty = IntegerType::getInt64Ty(C);
   /* Show a banner */
   outs() << "Using CUR-LLVM-PASS\n";
 

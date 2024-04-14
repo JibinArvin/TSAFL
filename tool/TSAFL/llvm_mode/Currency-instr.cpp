@@ -42,7 +42,7 @@ using namespace std::chrono;
 #define likely_if(x) __builtin_expect(!!(x), 1)   // x true
 #define unlikely_if(x) __builtin_expect(!!(x), 0) // x false
 
-thread_local unsigned int preloc = 0x8888; /* Unlike like afl. */
+// thread_local unsigned int preloc = 0x8888; /* Unlike like afl. */
 
 pthread_spinlock_t thread_count_lock;
 pthread_spinlock_t thread_create_lock;

@@ -18,7 +18,7 @@
    attempts a variety of basic fuzzing tricks, paying close attention to
    how they affect the execution path.
 
-  TSAFL design by Jibin Dong <>
+  TSAFL design by Jibin Dong <jibindong@hotmail.com>
 
  */
 
@@ -4471,18 +4471,18 @@ static void show_stats(void) { // NEXT:
       strcpy(tmp, cMGN);
     else
 
-        /* Subsequent cycles, but we're still making finds. */
-        if (cycles_wo_finds < 25 || min_wo_finds < 30)
-      strcpy(tmp, cYEL);
-    else
+      /* Subsequent cycles, but we're still making finds. */
+      if (cycles_wo_finds < 25 || min_wo_finds < 30)
+        strcpy(tmp, cYEL);
+      else
 
         /* No finds for a long time and no test cases to try. */
         if (cycles_wo_finds > 100 && !pending_not_fuzzed && min_wo_finds > 120)
-      strcpy(tmp, cLGN);
+          strcpy(tmp, cLGN);
 
-    /* Default: cautiously OK to stop? */
-    else
-      strcpy(tmp, cLBL);
+        /* Default: cautiously OK to stop? */
+        else
+          strcpy(tmp, cLBL);
   }
 
   SAYF(bV bSTOP "        run time : " cRST "%-34s " bSTG bV bSTOP
@@ -8389,7 +8389,7 @@ int main(int argc, char **argv) {
 
   s32 opt;
   u64 prev_queued = 0;
-  u32 sync_interval_cnt = 0, seek_to;
+  u32 sync_interval_cnt = 0, seek_to = 0;
   u8 *extras_dir = 0;
   u8 mem_limit_given = 0;
   u8 exit_1 = !!getenv("AFL_BENCH_JUST_ONE");
@@ -8398,7 +8398,7 @@ int main(int argc, char **argv) {
   struct timeval tv;
   struct timezone tz;
 
-  SAYF(cCYA "TSAFL " cBRI VERSION cRST " by <jibin>\n");
+  SAYF(cCYA "TSAFL " cBRI VERSION cRST " by <jibindong@hotmail.com>\n");
 
   doc_path = access(DOC_PATH, F_OK) ? "docs" : DOC_PATH;
 

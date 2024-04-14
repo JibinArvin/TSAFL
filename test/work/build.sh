@@ -31,5 +31,5 @@ $ROOT_DIR/tool/staticAnalysis/staticAnalysis.sh work
 
 # complie the instrumented program with ASAN
 export Con_PATH=$ROOT_DIR/test/work/ConConfig.work
-$ROOT_DIR/tool/staticAnalysis/DBDS-INSTRU/dbds-clang-fast -g -O0 -fsanitize=address -c ./work.c -o work.o
-clang++ ./work.o $ROOT_DIR/tool/staticAnalysis/DBDS-INSTRU/DBDSFunction.o -g -o work -lpthread -fsanitize=address -ldl
+$ROOT_DIR/tool/TSAFL/CUR-clang-fast -g -O0 -fsanitize=address -c ./work.c -o work.o
+clang++ ./work.o $ROOT_DIR/tool/TSAFL/Currency-instr.o -g -o work -lpthread -fsanitize=address -ldl
