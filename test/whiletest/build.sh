@@ -2,7 +2,7 @@
 
 # For Mac
 if [ $(command uname) == "Darwin" ]; then
-	if ! [ -x "$(command -v greadlink)" ]; then
+	if ! [ -x "$(command -v greadlink)"  ]; then
 		brew install coreutils
 	fi
 	BIN_PATH=$(greadlink -f "$0")
@@ -16,6 +16,8 @@ fi
 export ROOT_DIR=${ROOT_DIR}
 export PATH=${ROOT_DIR}/clang+llvm/bin:${ROOT_DIR}/tool/SVF/Release-build/bin:$PATH
 export LD_LIBRARY_PATH=${ROOT_DIR}/clang+llvm/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export CLANG_PATH=${ROOT_DIR}/clang+llvm/bin/clang
+export CLANGPLUS_PATH=${ROOT_DIR}/clang+llvm/bin/clang++
 
 echo "Installation completed. Everything's fine!"
 
@@ -24,12 +26,13 @@ set -eux
 # compile the program and get bit code
 cd $ROOT_DIR/test/whiletest
 ./cleanDIR.sh
-clang -g -O1 -emit-llvm -c ./lock.c -o lock.bc -Wno-unicode-whitespace
+clang -g -O0 -emit-llvm -c ./lock.c -o lock.bc
 
 # perform static analysis
 $ROOT_DIR/tool/staticAnalysis/staticAnalysis.sh lock
 
-# # complie the instrumented program with ASAN
-# export Con_PATH=$ROOT_DIR/test/lock/ConConfig.lock
-# $ROOT_DIR/tool/staticAnalysis/DBDS-INSTRU/dbds-clang-fast -g -O0 -c ./lock.c -o lock.o -Wno-unicode-whitespace
-# clang++ ./lock.o $ROOT_DIR/tool/staticAnalysis/DBDS-INSTRU/DBDSFunction.o -g -o lock -lpthread -ldl -Wno-unicode-whitespace
+# complie the instrumented program with ASAN
+export Con_PATH=$ROOT_DIR/test/whiletest/ConConfig.lock
+export ConFile_PATH=$ROOT_DIR/test/whiletest/config.txt
+$ROOT_DIR/tool/TSAFL/CUR-clang-fast -g -O0 -fsanitize=address -c ./lock.c -o lock.o
+$CLANGPLUS_PATH ./lock.o $ROOT_DIR/tool/TSAFL/Currency-instr.o $ROOT_DIR/tool/TSAFL/afl-llvm-rt.o -g -o lock -lpthread -fsanitize=address -ldl

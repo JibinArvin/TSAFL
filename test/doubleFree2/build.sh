@@ -16,21 +16,23 @@ fi
 export ROOT_DIR=${ROOT_DIR}
 export PATH=${ROOT_DIR}/clang+llvm/bin:${ROOT_DIR}/tool/SVF/Release-build/bin:$PATH
 export LD_LIBRARY_PATH=${ROOT_DIR}/clang+llvm/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export CLANG_PATH=${ROOT_DIR}/clang+llvm/bin/clang
+export CLANGPLUS_PATH=${ROOT_DIR}/clang+llvm/bin/clang++
 
 echo "Installation completed. Everything's fine!"
 
 set -eux
 
-
 # compile the program and get bit code
-cd $ROOT_DIR/test/doubleFree2/
+cd $ROOT_DIR/test/doubleFree2
 ./cleanDIR.sh
-clang -g -emit-llvm -c ./df.c -o df.bc
+clang -g -O0 -emit-llvm -c ./df.c -o df.bc
 
 # perform static analysis
 $ROOT_DIR/tool/staticAnalysis/staticAnalysis.sh df
 
-# # complie the instrumented program with ASAN
-# export Con_PATH=$ROOT_DIR/test/doubleFree2/ConConfig.df
-# $ROOT_DIR/tool/staticAnalysis/DBDS-INSTRU/dbds-clang-fast -g -fsanitize=address -c ./df.c -o df.o
-# clang++ ./df.o $ROOT_DIR/tool/staticAnalysis/DBDS-INSTRU/DBDSFunction.o -g -o df -lpthread -fsanitize=address -ldl
+# complie the instrumented program with ASAN
+export Con_PATH=$ROOT_DIR/test/doubleFree2/ConConfig.df
+export ConFile_PATH=$ROOT_DIR/test/doubleFree2/config.txt
+$ROOT_DIR/tool/TSAFL/CUR-clang-fast -g -O0 -fsanitize=address -c ./df.c -o df.o
+$CLANGPLUS_PATH ./df.o $ROOT_DIR/tool/TSAFL/Currency-instr.o $ROOT_DIR/tool/TSAFL/afl-llvm-rt.o -g -o df -lpthread -fsanitize=address -ldl

@@ -16,6 +16,8 @@ fi
 export ROOT_DIR=${ROOT_DIR}
 export PATH=${ROOT_DIR}/clang+llvm/bin:${ROOT_DIR}/tool/SVF/Release-build/bin:$PATH
 export LD_LIBRARY_PATH=${ROOT_DIR}/clang+llvm/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export CLANG_PATH=${ROOT_DIR}/clang+llvm/bin/clang
+export CLANGPLUS_PATH=${ROOT_DIR}/clang+llvm/bin/clang++
 
 echo "Installation completed. Everything's fine!"
 
@@ -24,11 +26,13 @@ set -eux
 # compile the program and get bit code
 cd $ROOT_DIR/test/issue205
 ./cleanDIR.sh
-clang++ -g -emit-llvm -c ./issue205.c -o issue205.bc
+clang -g -O0 -emit-llvm -c ./issue205.c -o issue205.bc
 
 # perform static analysis
 $ROOT_DIR/tool/staticAnalysis/staticAnalysis.sh issue205
 
-# complie the instrumented program
+# complie the instrumented program with ASAN
 export Con_PATH=$ROOT_DIR/test/issue205/ConConfig.issue205
-$ROOT_DIR/tool/staticAnalysis/DBDS-INSTRU/dbds-clang-fast++ -g ./issue205.c -o issue205 -fsanitize=address
+export ConFile_PATH=$ROOT_DIR/test/issue205/config.txt
+$ROOT_DIR/tool/TSAFL/CUR-clang-fast -g -O0 -fsanitize=address -c ./issue205.c -o issue205.o
+$CLANGPLUS_PATH ./issue205.o $ROOT_DIR/tool/TSAFL/Currency-instr.o $ROOT_DIR/tool/TSAFL/afl-llvm-rt.o -g -o issue205 -lpthread -fsanitize=address -ldl
