@@ -8710,9 +8710,6 @@ int main(int argc, char **argv) {
 
   perform_dry_run(use_argv);
 
-  TSF("--------------END perform_dry_run--------------");
-  goto stop_fuzzing;
-
   /* Set init number of the C(window)s and C(cfg) for calculate index during
    * explotition part! */
   set_init_cAndW();

@@ -29,4 +29,13 @@ cd ${ROOT_DIR}/tool/TSAFL/llvm_mode
 make clean
 make all
 
+
+# mkdir ${ROOT_DIR}/tool/TSAFL/build
+if [ ! -d ${ROOT_DIR}/tool/TSAFL/build ]; then
+    # 如果目录存在，则删除它
+    mkdir ${ROOT_DIR}/tool/TSAFL/build
+fi
+cmake -B ${ROOT_DIR}/tool/TSAFL/build ${ROOT_DIR}/tool/TSAFL
+make -C ${ROOT_DIR}/tool/TSAFL/build/
+
 echo "llvm_mode make is finished! PLZ check"
