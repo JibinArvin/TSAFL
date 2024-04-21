@@ -32,9 +32,7 @@ $CLANG_PATH -g -emit-llvm -c ./nobug.c -o nobug.bc
 $ROOT_DIR/tool/staticAnalysis/staticAnalysis.sh nobug
 
 # complie the instrumented program with ASAN
+export AFL_USE_ASAN=1
 export Con_PATH=$ROOT_DIR/test/nobug/ConConfig.nobug
 export ConFile_PATH=$ROOT_DIR/test/nobug/config.txt
-$ROOT_DIR/tool/TSAFL/CUR-clang-fast -g -O0 -c ./nobug.c -o nobug.o -fsanitize=address
-$CLANGPLUS_PATH ./nobug.o $ROOT_DIR/tool/TSAFL/Currency-instr.o $ROOT_DIR/tool/TSAFL/afl-llvm-rt.o -g -o nobug -lpthread -ldl -fsanitize=address
-$CLANGPLUS_PATH --version
-
+$ROOT_DIR/tool/TSAFL/CUR-clang-fast++ -g -O0 ./nobug.c -o nobug.o -fsanitize=address

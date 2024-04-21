@@ -2968,7 +2968,7 @@ static u8 run_target_with_scheduel(char **argv, u32 timeout, u8 *use_mem,
   struct Thread_info *info = t_info;
   struct single_t_info *s_i_t = get_s_t(info);
   struct thread_info_scheduel_token *token = get_tis_token(info, s_i_t);
-  TSF("tnc size: %d", token->size);
+  TSF("token size: %d", token->size);
   struct thread_need_care *tnc = get_t_n_c(info, s_i_t);
   TSF("tnc size: %d", tnc->size);
   struct scheduel_result_list *result = NULL;

@@ -17,21 +17,24 @@ typedef struct {
   FILE *output_file;
 } ThreadArgs;
 
+double total_amount = 0;
+
 void *process_order(void *arg) {
   ThreadArgs *args = (ThreadArgs *)arg;
   Order order = args->order;
   FILE *output_file = args->output_file;
-
   if (strcmp(order.status, "PENDING") == 0) {
     // 处理待处理订单
     fprintf(output_file, "Processing order: %s, Amount: %.2f\n", order.order_id,
             order.amount);
+    total_amount += order.amount;
     // 执行订单处理逻辑,如更新库存、生成发票等
     // ...
   } else if (strcmp(order.status, "SHIPPED") == 0) {
     // 处理已发货订单
     fprintf(output_file, "Updating shipping status for order: %s\n",
             order.order_id);
+    total_amount -= order.amount;
     // 执行发货后的操作,如更新物流信息、发送通知等
     // ...
   } else if (strcmp(order.status, "COMPLETED") == 0) {
@@ -43,6 +46,8 @@ void *process_order(void *arg) {
     fprintf(output_file, "Invalid order status for order: %s\n",
             order.order_id);
   }
+
+  fprintf(output_file, "Here is total_amount right now %.2f\n", total_amount);
 
   free(arg);
   return NULL;

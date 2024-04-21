@@ -10,4 +10,5 @@
     "editor.defaultFormatter": "xaver.clang-format"
   },
   "cmake.configureOnOpen": true,
+  "cmake.sourceDirectory": "/home/dong/workdir/code/TSAFL/tool/staticAnalysis/LLVM-PASS/Generate_CFG_CG",
 }

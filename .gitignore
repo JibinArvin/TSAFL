@@ -4,3 +4,5 @@ clang+llvm
 build/
 __pycache__/
 .ninja_*
+findings_dirs
+inputs

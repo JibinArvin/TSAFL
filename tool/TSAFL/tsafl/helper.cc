@@ -2265,7 +2265,7 @@ void generate_que(struct scheduel_result_list **result_ptr,
 #ifdef OUT_DEBUG
   std::cout << "[DEBUG] final size: " << final_list.size() << std::endl;
 #endif
-  fprintf(stderr, "[JIBIN]: generate plan final size %ld", final_list.size());
+  fprintf(stderr, "[TSAFL]: generate plan final size %ld\n", final_list.size());
   put_Scheduel_que_into_result(result_ptr, final_list, w_info, tid_number_map);
   g_single_time_info.move_and_build_result(final_list);
   g_single_time_info.add_info(res_set, w_info, st_que);

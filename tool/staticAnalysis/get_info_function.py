@@ -242,6 +242,7 @@ if __name__ == "__main__":
         reset = True
         function_set = {}
         function_name = ""
+        insn = Instruction()
         for line in mssa_file:
 
             if "@[" and "]]]" in line:
