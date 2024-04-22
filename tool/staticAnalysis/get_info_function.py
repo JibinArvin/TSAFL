@@ -52,13 +52,13 @@ class Instruction:
         self.load_from = set()
         self.store_to = set()
         self.source_loc = None
-        self.poitner_type = None
+        self.pointer_type = None
 
     def is_integer(self):
-        return self.poitner_type in ["i8", "i16", "i32", "i64"]
+        return self.pointer_type in ["i8", "i16", "i32", "i64"]
 
     def is_general_pointer(self):
-        return self.poitner_type in ["i8*", "i16*", "i32*", "i64*"]
+        return self.pointer_type in ["i8*", "i16*", "i32*", "i64*"]
 
     def extract_type(self, line):
         typ = line[line.find("({") + 2 : line.find("})")]
@@ -68,7 +68,7 @@ class Instruction:
         for regex in re.findall("\.[0-9]+:", typ):
             newregex = re.sub(r"\.[0-9]+:", ":", regex)
             typ = typ.replace(regex, newregex)
-        self.poitner_type = typ
+        self.pointer_type = typ
 
     def extract_source_location(self, line):
         loc = line.strip().split("[[")[1]
@@ -101,7 +101,7 @@ class Instruction:
         return remove_column(strip_start(self.source_loc, PREFIX))
 
     def get_pointer_type(self):
-        return self.poitner_type
+        return self.pointer_type
 
 
 class MemoryLocation:
@@ -168,7 +168,7 @@ class Function:
                 # if memloc == 1:
                 #     continue
                 str_temp += "tochMemLoc : " + str(memloc) + "\n"
-                if is_write == TRUE:
+                if is_write:
                     str_temp += "actionType : write\n"
                 else:
                     str_temp += "actionType : read\n"
@@ -192,7 +192,7 @@ def functionSetTOXML(function_set: Dict, fileLocation: string):
                     # if memloc == 1:
                     #     continue
                     OpNode.setAttribute("tochMemLoc", str(memloc))
-                    if is_write == TRUE:
+                    if is_write:
                         OpNode.setAttribute("actionType", "write")
                     else:
                         OpNode.setAttribute("actionType", "read")
@@ -250,8 +250,6 @@ if __name__ == "__main__":
             if "cpp:0]]" in line:
                 continue
             if "FUNCTION" in line:
-                # debug
-                # print(re.findall('FUNCTION:.*?[=]{1}', line)[0][10: -1])
                 function_tmp = Function(line)
                 function_name = function_tmp.getName()
                 function_set[function_name] = function_tmp
@@ -277,21 +275,18 @@ if __name__ == "__main__":
                 # exclude the function or loc not in the project.
                 if "/usr" in line:
                     continue
+                # print(insn.get_source_location())
                 function_set[function_name].addOp(insn)
                 typ = insn.get_pointer_type()
                 for memloc, is_write in insn.get_accessed_memory_location():
-                    # print('here' + str(memloc))
-                    # print('  ' + str(is_write) + ' \n')
-                    # result
-                    # here18
-                    # False
                     if memloc == 1:
                         continue
-                    # key = (memloc, typ)
                     key = memloc
                     if not key in memory_locations:
                         memory_locations[key] = MemoryLocation(key)
                     memory_locations[key].add_instruction(insn, is_write)
+        for k in function_set.keys():
+            function_set[k].dump()
 
     SaveList = []
     for key in memory_locations:
@@ -314,5 +309,5 @@ if __name__ == "__main__":
     # for each in sorted(locSet):
     #     if "/usr/lib/gcc/x86_64-linux-gnu" not in each and not each.endswith(":0"):
     #         print(each)
-    clean_function_set(function_set)
+    # clean_function_set(function_set)
     functionSetTOXML(function_set, "dom_write.xml")
