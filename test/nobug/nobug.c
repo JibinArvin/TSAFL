@@ -50,6 +50,8 @@ void *process_order(void *arg) {
   fprintf(output_file, "Here is total_amount right now %.2f\n", total_amount);
 
   free(arg);
+  char s = 's';
+  fprintf(output_file, "Here is total_amount right now %s\n", &s);
   return NULL;
 }
 
