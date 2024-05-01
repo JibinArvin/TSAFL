@@ -29,7 +29,8 @@ RUN mkdir /usr/local/share/aclocal/
 RUN cp -rf /usr/share/aclocal/* /usr/local/share/aclocal/
 
 RUN find /workdir/tsafl -name * | xargs dos2unix
-
+RUN echo 'kernel.sched_rt_runtime_us=-1' >> /etc/sysctl.conf
+RUN sysctl -w kernel.sched_rt_runtime_us=-1
 # RUN tool/install_llvm.sh
 # RUN tool/install_SVF.sh
 # RUN tool/install_staticAnalysis.sh

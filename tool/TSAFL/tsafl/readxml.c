@@ -8,7 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void format_function_arrary(struct function_array *f_array);
 static void clean_v_array(struct variable_array *v_array);
 static int parse_distance_child(xmlDocPtr doc, xmlNodePtr cur,
                                 struct distance_container *dis_node);
@@ -417,30 +416,6 @@ static void dump_g_array(struct groupKey_array *g_array) {
     }
     printf("g_array[%d]->key: %d, size:%d.\n", i, g_array->list[i]->key,
            g_array->list[i]->size);
-  }
-}
-
-// FIXME: lead to segmentation fault
-static void format_function_arrary(struct function_array *f_array) {
-  int after_size = 0;
-  int count[OP_MAX_COUNT];
-  for (int i = 0; i < f_array->size; i++) {
-    if (f_array->list[i]->size == 0) {
-      ck_free(f_array->list[i]);
-    } else {
-      count[after_size++] = i;
-    }
-  }
-  for (int i = 0; i < after_size; i++) {
-    printf("count: %d, i:%d, loc: %d\n", after_size, i, count[i]);
-  }
-  f_array->size = after_size;
-  struct function_container *list_temp[OP_MAX_COUNT];
-  for (int i = 0; i < after_size; i++) {
-    list_temp[i] = f_array->list[count[after_size]];
-  }
-  for (int i = 0; i < after_size; i++) {
-    f_array->list[i] = list_temp[i];
   }
 }
 

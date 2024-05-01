@@ -775,7 +775,6 @@ static void add_to_queue(u8 *fname, u32 len, u8 passed_det) {
   q->passed_det = passed_det;
 
   q->exec_time = 1;
-  q->sch_number = UINT32_MAX;
   if (q->depth > max_depth)
     max_depth = q->depth;
 
@@ -799,6 +798,8 @@ static void add_to_queue(u8 *fname, u32 len, u8 passed_det) {
   }
 
   last_path_time = get_cur_time();
+
+  add_to_queEntry_sInfo_map(q);
 }
 
 /* Destroy the entire queue. */
@@ -2705,20 +2706,6 @@ static void write_with_gap(void *mem, u32 len, u32 skip_at, u32 skip_len) {
 
 static void show_stats(void);
 
-static struct queue_entry *get_same_sch_exe_q(struct queue_entry *q_in) {
-  struct queue_entry *q = queue;
-  if (q_in->sch_exec_cksum == 0 && q_in->sch_exec_size == 0) {
-    fprintf(stderr,
-            "[ERROR] When you want to compare sch_exec_cksum, PLZ init it!\n");
-  }
-  while (q) {
-    if (q->sch_exec_cksum == q_in->sch_exec_cksum &&
-        q->sch_exec_size == q_in->sch_exec_size)
-      return q;
-    q = q->next;
-  }
-  return NULL;
-}
 /* 4/16 NEXT: */
 /* three different mode need to go. */
 static u8 run_target_with_scheduel(char **argv, u32 timeout, u8 *use_mem,
@@ -2791,8 +2778,9 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
     }
     u32 trace_counter = count_bytes(trace_bits);
     cksum = hash32(trace_bits, MAP_SIZE, HASH_CONST);
+    fill_que_sch_exeInfo(t_info, q);
     if (new_window != 1)
-      new_window = have_new_concurrent_per(t_info);
+      new_window = have_new_concurrent_per(q);
     /* JIBIN: don't worry about the var anymore! */
     if (q->exec_cksum != cksum) {
 
@@ -2844,13 +2832,10 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
   if (new_window == 0) {
     /* First, we need find why */
     TSF("Nooo new window this time!");
-    fill_que_sch_exeInfo(t_info, q);
     struct queue_entry *q_same = get_same_sch_exe_q(q);
     if (q_same != NULL) {
       q->schedule_var_be = q_same->schedule_var_be;
-      fill_queEntry_sInfo_with_another(q, q_same);
-      update_q_cfg(q);
-      update_q_window(q);
+      update_queEntry_sInfo_with_another(q, q_same);
     } else {
       new_window = 1;
       TSF("Can't find seed with same concurrent feature!");
@@ -2879,11 +2864,10 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
       q->schedule_var_be = 1;
     }
     TSF("new_fault : %d ", sch_fault);
-    fill_que_sch_exeInfo(t_info, q);
-    fill_queEntry_sInfo(q, cfg_token);
-    /* update w and cfg map!*/
-    update_q_cfg(q);
-    update_q_window(q);
+
+    update_queEntry_sInfo(q, cfg_token);
+    update_new_scheQ_to_map(q, t_info);
+
     finish_one_scheduel_run(cfg_token_finished);
     free(s_i_t_cfg);
     free(tInfo_token);
@@ -2901,6 +2885,9 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
   total_bitmap_entries++;
 
   update_bitmap_score(q);
+  /* update w and cfg map!*/
+  update_q_cfg(q);
+  update_q_window(q);
   /* Insert q into map. */
   insert_q_exe(q->exec_cksum, q->bitmap_size, q);
   /* Insert q to g_filter_info.q_c_mem ... !*/

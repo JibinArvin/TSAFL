@@ -165,7 +165,6 @@ public:
   bool meaningful;
   size_t windows_size;
   size_t cfg_size;
-  size_t number;
   cks_set windows_cks;
   cks_set retire_windows;
   cks_set cfg_cks;
@@ -173,7 +172,7 @@ public:
   std::set<CK_SUM> trace_mem;
   Que_entry_cpp()
       : q_entry_ptr(nullptr), meaningful(false), windows_cks({}), cfg_cks({}),
-        number(INT32_MAX), windows_size(0), cfg_size(0){};
+        windows_size(0), cfg_size(0){};
   size_t get_wSet_size() { return windows_cks.size(); };
   size_t get_cSet_size() { return cfg_cks.size(); };
   void add_w_cks(ck_size a) { windows_cks.insert(a); };
@@ -201,11 +200,9 @@ void Que_entry_cpp::retire_c(ck_size a) {
   retire_cfg.insert(a);
 }
 
-std::shared_ptr<Que_entry_cpp> init_que_entry(struct queue_entry *q_entry_ptr,
-                                              size_t number) {
+std::shared_ptr<Que_entry_cpp> init_que_entry(struct queue_entry *q_entry_ptr) {
   std::shared_ptr<Que_entry_cpp> res = std::make_shared<Que_entry_cpp>();
   res->q_entry_ptr = q_entry_ptr;
-  res->number = number;
   res->meaningful = true;
   return res;
 }
@@ -227,9 +224,10 @@ public:
   std::unordered_map<size_t, CK_SUM> count_to_ckSum;
   std::map<std::pair<CK_SUM, size_t>, size_t> ck_sum_map;
   WindowSearchMap close_map;
-  std::set<std::pair<CK_SUM_32, size_t>>
-      con_ck_sum_set; /* Just like virgin bits.*/
-  std::map<size_t, std::shared_ptr<Que_entry_cpp>> q_entry_info_map;
+  std::map<std::pair<CK_SUM_32, size_t>, std::shared_ptr<Que_entry_cpp>>
+      conCkSumMap; /* Just like virgin bits.*/
+  std::map<struct queue_entry *, std::shared_ptr<Que_entry_cpp>>
+      q_entry_info_map;
   Cks_to_qEntryPtr cks_q_w;
   Cks_to_qEntryPtr cks_q_c;
   Cks32_to_qEntryPtr exesum_q;
@@ -239,7 +237,7 @@ public:
   std::set<CK_SUM> finish_cfg;
   u64 exe_times;
   FilterInfo()
-      : count_to_ckSum({}), ck_sum_map({}), close_map({}), con_ck_sum_set({}),
+      : count_to_ckSum({}), ck_sum_map({}), close_map({}), conCkSumMap({}),
         q_entry_info_map({}), cks_q_w({}), cks_q_c({}), exesum_q({}),
         exe_times(0), q_w_mem({}), q_c_mem({}), q_t_mem({}) {}
   inline CK_SUM get_cksum(size_t n);
@@ -266,21 +264,36 @@ public:
 
   void clear();
 
-  bool search_con_set(std::pair<CK_SUM_32, size_t> &element) {
-    return con_ck_sum_set.find(element) == con_ck_sum_set.end() ? false : true;
+  bool searchConMap(std::pair<CK_SUM_32, size_t> element) {
+    return conCkSumMap.find(element) == conCkSumMap.end() ? false : true;
   }
 
-  bool search_con_set_or_add(std::pair<CK_SUM_32, size_t> &element);
+  struct queue_entry *getQPtrByScheCkSum(std::pair<CK_SUM_32, size_t> S) {
+    if (!searchConMap(S)) {
+      return nullptr;
+    }
+    return conCkSumMap[S]->q_entry_ptr;
+  };
+
+  void addQPtrToConMap(std::pair<CK_SUM_32, size_t> element,
+                       std::shared_ptr<Que_entry_cpp> item) {
+    if (searchConMap(element)) {
+      fprintf(stderr,
+              "[ERROR] helper.cc:  Func addToConMap find repeated element");
+      exit(2);
+    }
+    conCkSumMap.insert({element, item});
+  }
 
   static CK_SUM hash_two(CK_SUM first, CK_SUM second);
 
   CK_SUM get_cksum_by_two(ACTION_NUMBER a, ACTION_NUMBER b);
 
-  void add_q_entry(size_t loc, std::shared_ptr<Que_entry_cpp> ptr);
+  void add_q_entry(struct queue_entry *, std::shared_ptr<Que_entry_cpp> ptr);
 
   CK_SUM get_ck_sum_by_two_131(ACTION_NUMBER a, ACTION_NUMBER b);
 
-  std::shared_ptr<Que_entry_cpp> search_qEntry_info(size_t number);
+  std::shared_ptr<Que_entry_cpp> search_qEntry_info(struct queue_entry *q);
 
   struct queue_entry *search_q_by_w(ck_size cks);
 
@@ -396,7 +409,12 @@ int8_t FilterInfo::cfg_finish(CK_SUM ck, u32 count) {
     return 0;
   }
   for (auto &q : q_c_mem[ck]) {
-    auto q_info = search_qEntry_info(q->sch_number);
+    auto q_info = search_qEntry_info(q);
+    if (q_info == nullptr) {
+      fprintf(stderr, "[ERROR] helper.cc: func: cfg_finish "
+                      "shoule not be here.\n");
+      exit(2);
+    }
     if (!q_info->meaningful) {
       fprintf(stderr, "[ERROR] Using meaningless q_entry_cpp!\n");
       return 0;
@@ -476,15 +494,13 @@ struct queue_entry *FilterInfo::search_q_by_c(ck_size cks) {
   return cks_q_c[cks];
 }
 
-std::shared_ptr<Que_entry_cpp> FilterInfo::search_qEntry_info(size_t number) {
-  if (q_entry_info_map.find(number) == q_entry_info_map.end()) {
-    fprintf(stderr, "[ERROR] Out of range!");
-#ifdef DEBUG
-    exit(100);
-#endif
+std::shared_ptr<Que_entry_cpp>
+FilterInfo::search_qEntry_info(struct queue_entry *q) {
+  if (q_entry_info_map.find(q) == q_entry_info_map.end()) {
+    fprintf(stderr, "[ERROR] Out of range!\n");
     return nullptr;
   }
-  return q_entry_info_map[number];
+  return q_entry_info_map[q];
 }
 
 CK_SUM FilterInfo::get_ck_sum_by_two_131(ACTION_NUMBER a, ACTION_NUMBER b) {
@@ -494,12 +510,13 @@ CK_SUM FilterInfo::get_ck_sum_by_two_131(ACTION_NUMBER a, ACTION_NUMBER b) {
   return init;
 }
 
-void FilterInfo::add_q_entry(size_t loc, std::shared_ptr<Que_entry_cpp> ptr) {
-  if (q_entry_info_map.find(loc) != q_entry_info_map.end()) {
+void FilterInfo::add_q_entry(struct queue_entry *q,
+                             std::shared_ptr<Que_entry_cpp> ptr) {
+  if (q_entry_info_map.find(q) != q_entry_info_map.end()) {
     fprintf(stderr, "[ERROR] Repeated number!\n");
     return;
   }
-  q_entry_info_map[loc] = ptr;
+  q_entry_info_map[q] = ptr;
   return;
 }
 
@@ -537,20 +554,11 @@ CK_SUM FilterInfo::hash_two(CK_SUM first, CK_SUM second) {
   return (first * 31) ^ second;
 }
 
-bool FilterInfo::search_con_set_or_add(std::pair<CK_SUM_32, size_t> &element) {
-  if (search_con_set(element)) {
-    return true;
-  } else {
-    con_ck_sum_set.insert(element);
-    return false;
-  }
-};
-
 void FilterInfo::clear() {
   count_to_ckSum.clear();
   ck_sum_map.clear();
   close_map.clear();
-  con_ck_sum_set.clear();
+  conCkSumMap.clear();
   q_entry_info_map.clear();
   cks_q_w.clear();
   cks_q_c.clear();
@@ -1067,10 +1075,10 @@ public:
       : start(start), end(end), tid(tid), size(size), loc(0), list(),
         is_main(false), to_main(), signal_list() {}
   SingleThread() : start(0), end(0), size(0), loc(0), list(), signal_list() {}
-  void add_list(int32_t action);
+  void addList(int32_t action);
   void dump();
-  int32_t into_squence(std::vector<std::pair<size_t, size_t>> &que);
-  inline void back_one_step(size_t len);
+  int32_t intoSquence(std::vector<std::pair<size_t, size_t>> &que);
+  inline void backOneStep(size_t len);
   void remove_element_fromLlist(std::vector<size_t> &locs);
   void init_signal_list_byV(const std::vector<int32_t> &v);
   void switch_signal_list(std::vector<int32_t> &v);
@@ -1149,8 +1157,7 @@ void fill_single_que_in_set_signal_list(const std::vector<size_t> &single,
   }
 }
 
-int32_t
-SingleThread::into_squence(std::vector<std::pair<size_t, size_t>> &que) {
+int32_t SingleThread::intoSquence(std::vector<std::pair<size_t, size_t>> &que) {
   if (loc > size) {
     fprintf(stderr, "[ERROR] Single_thread::into_squence -> OVER the range.\n");
   }
@@ -1169,17 +1176,17 @@ SingleThread::into_squence(std::vector<std::pair<size_t, size_t>> &que) {
   return res;
 }
 
-void SingleThread::back_one_step(size_t len) {
+void SingleThread::backOneStep(size_t len) {
   if (loc < 0) {
     fprintf(
         stderr,
-        "[ERROR] Single_thread::back_one_step() -> there is no way to back.\n");
+        "[ERROR] Single_thread::backOneStep() -> there is no way to back.\n");
     exit(1);
   }
   loc -= len;
 }
 
-void SingleThread::add_list(int32_t action) { list.push_back(action); }
+void SingleThread::addList(int32_t action) { list.push_back(action); }
 
 void SingleThread::dump() { std::cout << tid << std::endl; }
 
@@ -1194,11 +1201,10 @@ public:
   Working_info()
       : interesting_relation({}), interesting({}), start_same_time({}){};
   /* Extra thread need care from t_n_c*/
-  void generate_interesting(const struct thread_need_care *t_n_c);
+  void generateInteresting(const struct thread_need_care *t_n_c);
   /* make sure the schedueled thread is in same time space!*/
-  void rebuild_relation_map(const std::vector<SingleThread> &st_que);
+  void rebuildRelationMap(const std::vector<SingleThread> &st_que);
   void generate_interesting_pair(std::set<std::pair<size_t, size_t>> &res_set);
-  void generate_start_same_time(const std::vector<SingleThread> &st_que);
 };
 
 void Working_info::generate_interesting_pair(
@@ -1218,7 +1224,7 @@ void Working_info::generate_interesting_pair(
 #endif
 }
 
-void Working_info::generate_interesting(const struct thread_need_care *t_n_c) {
+void Working_info::generateInteresting(const struct thread_need_care *t_n_c) {
   for (size_t i = 0; i < t_n_c->size; i++) {
     interesting.insert(t_n_c->tid_list[i]);
   }
@@ -1228,8 +1234,8 @@ void Working_info::generate_interesting(const struct thread_need_care *t_n_c) {
 #endif
 }
 
-void Working_info::rebuild_relation_map(
-    const std::vector<SingleThread> &st_que) {
+/* Check if there are current space for two thread. */
+void Working_info::rebuildRelationMap(const std::vector<SingleThread> &st_que) {
   for (size_t i = 0; i < st_que.size(); i++) {
     if (st_que[i].is_main)
       continue;
@@ -1237,57 +1243,43 @@ void Working_info::rebuild_relation_map(
     for (size_t j = i + 1; j < st_que.size(); j++) {
       if (st_que[j].is_main)
         continue;
-      if (std::max(st_que[i].start, st_que[j].start) <
-          std::min(st_que[i].end, st_que[j].end)) {
+      if (st_que[i].start < st_que[j].end && st_que[j].start < st_que[i].end) {
         interesting_relation[st_que[i].tid].insert(st_que[j].tid);
       }
     }
   }
+
 #ifdef OUT_DEBUG
-  std::cout << "[DEBUG] Working_info::rebuild_relation_map finished! size:"
+  for (auto &p : interesting_relation) {
+    std::cout << "[TSAFL] interesting_relation pair:" << p.first << "  "
+              << p.second.size() << std::endl;
+  }
+  std::cout << "[DEBUG] Working_info::rebuildRelationMap finished! size:"
             << interesting_relation.size() << std::endl;
 #endif
 }
 
-void Working_info::generate_start_same_time(
-    const std::vector<SingleThread> &st_que) {
-#ifdef OUT_DEBUG
-  std::cout << "[DEBUG] Working_info::generate_start_same_time start!"
-            << std::endl;
-#endif
-  for (size_t i = 0; i < st_que.size(); i++) {
-    interesting_relation[st_que[i].tid] = {};
-    for (size_t j = 0; j < st_que.size(); j++) {
-      if (st_que[j].tid == st_que[i].tid)
-        continue;
-      if (st_que[i].start == st_que[j].start) {
-        interesting_relation[st_que[i].tid].insert(st_que[j].tid);
-      }
-    }
-  }
-}
-
-SingleThread build_sT_from_token(const struct single_info_token *token) {
+SingleThread buildSTFromToken(const struct single_info_token *token) {
   size_t start = token->start;
   size_t end = token->end;
 
   auto res = SingleThread(start, end, token->action_size, token->tid);
   for (int32_t i = 0; i < (int32_t)token->action_size; i++) {
-    res.add_list((size_t)(token->actions[i]));
+    res.addList((size_t)(token->actions[i]));
   }
   res.is_main = token->is_main;
   return res;
 }
 
-size_t get_max_size_from_ques(const std::vector<SingleThread> &st_que,
-                              const std::vector<size_t> &loc) {
+size_t getMaxSizeFromQues(const std::vector<SingleThread> &st_que,
+                          const std::vector<size_t> &loc) {
   size_t res = 0;
   std::for_each(loc.begin(), loc.end(),
                 [&res, &st_que](const unsigned long &number) {
                   res += st_que[number].size;
                 });
 #ifdef OUT_DEBUG
-  std::cout << "[DEBUG] get_max_size_from_ques->res:  " << res << std::endl;
+  std::cout << "[DEBUG] getMaxSizeFromQues->res:  " << res << std::endl;
 #endif
   return res;
 }
@@ -1429,12 +1421,12 @@ void generate_useless_var(
 void leave_single_times() { g_single_time_info.clear(); }
 
 /* Used for generate the basic info just for single times. */
-void generate_basic_info(struct thread_info_scheduel_token *token,
-                         std::shared_ptr<Working_info> w_info,
-                         std::vector<SingleThread> &st_que,
-                         const struct thread_need_care *t_n_c) {
+void generateBasicInfo(struct thread_info_scheduel_token *token,
+                       std::shared_ptr<Working_info> w_info,
+                       std::vector<SingleThread> &st_que,
+                       const struct thread_need_care *t_n_c) {
   for (size_t i = 0; i < token->size; i++) {
-    auto st = build_sT_from_token(&token->list[i]);
+    auto st = buildSTFromToken(&token->list[i]);
     st_que.emplace_back(st);
   }
 #ifdef OUT_DEBUG
@@ -1443,9 +1435,8 @@ void generate_basic_info(struct thread_info_scheduel_token *token,
 #endif
   g_single_time_info.clear();
   // TODO: generate info
-  w_info->generate_interesting(t_n_c);
-  w_info->rebuild_relation_map(st_que);
-  w_info->generate_start_same_time(st_que);
+  w_info->generateInteresting(t_n_c);
+  w_info->rebuildRelationMap(st_que);
   return;
 }
 
@@ -1692,14 +1683,14 @@ void create_que(std::vector<SingleThread> &st_que,
     return;
   }
   for (const auto &item : loc) {
-    int32_t len_plus = st_que[item].into_squence(res);
+    int32_t len_plus = st_que[item].intoSquence(res);
     if (len_plus > 0) {
       create_que(st_que, loc, final_list, res, max_size, size + len_plus,
                  mem_cksum);
       for (size_t i = 0; i < len_plus; i++) {
         res.pop_back();
       }
-      st_que[item].back_one_step(len_plus);
+      st_que[item].backOneStep(len_plus);
     }
   }
 }
@@ -1791,26 +1782,10 @@ void generate_and_init_Iq(Ptr_i_que que,
 
 void compare_two_sequence(struct single_info_token *s_one,
                           struct single_info_token *s_two, size_t loc_one,
-                          size_t loc_two, Ptr_i_que interesting_ques) {
+                          size_t loc_two, Ptr_i_que &interesting_ques) {
   /* Can't use the same sequence! */
   if (loc_one == loc_two)
     return;
-  /* Find the same part! */
-  size_t i = 0;
-  for (; i < s_one->action_size && i < s_two->action_size; i++) {
-    if (s_one->actions[i] != s_two->actions[i])
-      break;
-  }
-  /* Color the first one !*/
-  if (i == 0)
-    return;
-  for (size_t j = 0; j < i; j++) {
-    /* Color as not interesting! */
-    (*interesting_ques)[loc_one][j] = -1;
-  };
-#define WILD_MODE
-/* It's too wild for me, I think....*/
-#ifdef WILD_MODE
   std::set<std::pair<size_t, size_t>> mem;
   for (size_t i = 0; i < s_two->action_size - 1; i++) {
     mem.insert({s_two->actions[i], s_two->actions[i + 1]});
@@ -1819,14 +1794,13 @@ void compare_two_sequence(struct single_info_token *s_one,
     if (mem.find({s_one->actions[i], s_one->actions[i + 1]}) != mem.end())
       (*interesting_ques)[loc_one][i] = -1;
   }
-#endif
 }
 
 /* JIBIN PS: I do think that extra this double for into a macro function.
  * But ... waiting...ing...*/
 /* First of all, do the thread sequence! color it! */
 void color_que_with_thread_similarity(
-    Ptr_i_que interesting_ques, struct thread_info_scheduel_token *token) {
+    Ptr_i_que &interesting_ques, struct thread_info_scheduel_token *token) {
   if (interesting_ques->size() == 0)
     FATAL("Plz init the interesting_que before use.");
   /* Plz init the interesting_que before use.*/
@@ -2181,7 +2155,7 @@ void generate_que(struct scheduel_result_list **result_ptr,
     tid_number_map->insert(std::make_pair(t_n_c->tid_list[j], j));
     j++;
   }
-  generate_basic_info(token, w_info, st_que, t_n_c);
+  generateBasicInfo(token, w_info, st_que, t_n_c);
 
   std::unordered_map<size_t, size_t> st_map;
   size_t i = 0;
@@ -2213,7 +2187,7 @@ void generate_que(struct scheduel_result_list **result_ptr,
                                          in st_que or .. JIBIN: Wrong name! */
     auto second_loc = st_map[p.second];
     std::vector<std::pair<size_t, size_t>> temp = {};
-    size_t max_size = get_max_size_from_ques(st_que, trans);
+    size_t max_size = getMaxSizeFromQues(st_que, trans);
     auto I_q1 = (*I_q)[first_loc];
     auto I_q2 = (*I_q)[second_loc];
 
@@ -2535,10 +2509,34 @@ CK_SUM get_hash_seq() {
  * This can make sure that the que_entry without new cur will find the same que
  * 100%!
  */
-u8 have_new_concurrent_per(struct Thread_info *t_info) {
+u8 have_new_concurrent_per(struct queue_entry *q) {
   /* Used to store the imformation from t_info. */
-  auto hash_result = get_concurHash_from_tInfo(t_info);
-  return g_filter_info.search_con_set_or_add(hash_result) ? 0 : 1;
+  std::pair<CK_SUM_32, size_t> hash_result = {q->sch_exec_cksum,
+                                              q->sch_exec_size};
+  return g_filter_info.searchConMap(hash_result) ? 0 : 1;
+}
+
+struct queue_entry *get_same_sch_exe_q(struct queue_entry *q_in) {
+  if (have_new_concurrent_per(q_in)) {
+    fprintf(stderr, "[ERROR] helper.cc : should not be here.\n");
+    exit(2);
+  }
+
+  if (q_in->sch_exec_cksum == 0 && q_in->sch_exec_size == 0) {
+    fprintf(stderr,
+            "[ERROR] When you want to compare sch_exec_cksum, PLZ init it!\n");
+    exit(2);
+  }
+  auto res = g_filter_info.getQPtrByScheCkSum(
+      {q_in->sch_exec_cksum, q_in->sch_exec_size});
+
+  return res;
+}
+
+void update_new_scheQ_to_map(struct queue_entry *q_in,
+                             struct Thread_info *t_info) {
+  g_filter_info.addQPtrToConMap({q_in->sch_exec_cksum, q_in->sch_exec_size},
+                                g_filter_info.search_qEntry_info(q_in));
 }
 
 /* Generate the single_t_info for once time. */
@@ -2955,24 +2953,39 @@ int8_t store_info_preSchedule(struct Thread_info *t_info) {
   return 1;
 }
 
-/* Init the same queEntry */
-int8_t fill_queEntry_sInfo_with_another(struct queue_entry *q,
-                                        struct queue_entry *another) {
-  auto q_same_info = g_filter_info.search_qEntry_info(another->sch_number);
-  int64_t loc = 1;
-  if (q->sch_number == UINT32_MAX) {
-    loc = g_filter_info.q_entry_info_map.size();
-    q->sch_number = loc;
+std::shared_ptr<Que_entry_cpp> search_g_qEntry_info(struct queue_entry *q) {
+  auto res = g_filter_info.search_qEntry_info(q);
+  if (res == nullptr) {
+    fprintf(stderr, "[ERROR] helper.cc: func: cfg_finish "
+                    "shoule not be here.\n");
+    exit(2);
   }
+  return res;
+}
+
+void add_to_queEntry_sInfo_map(struct queue_entry *q) {
+  auto ptr = init_que_entry(q);
+  g_filter_info.add_q_entry(q, ptr);
+}
+
+/* REMOVE: Init the same queEntry */
+int8_t update_queEntry_sInfo_with_another(struct queue_entry *q,
+                                          struct queue_entry *another) {
+  auto q_same_info = g_filter_info.search_qEntry_info(another);
+  if (q_same_info == nullptr) {
+    fprintf(stderr, "[ERROR] helper.cc: func:fill_queEntry_sInfo_with_another "
+                    "shoule not be here.\n");
+    exit(2);
+  }
+  int64_t loc = 1;
   /* If q_same_info is tatolly useless. */
   if (q_same_info == useless_que_entry_cpp) {
-    g_filter_info.add_q_entry(loc, useless_que_entry_cpp);
+    g_filter_info.add_q_entry(q, useless_que_entry_cpp);
     return 0;
   }
 
-  auto ptr = init_que_entry(q, loc);
+  auto ptr = search_g_qEntry_info(another);
   ptr->q_entry_ptr = q;
-  ptr->number = loc;
   ptr->meaningful = q_same_info->meaningful;
   ptr->windows_cks = q_same_info->windows_cks;
   ptr->cfg_size = q_same_info->cfg_size;
@@ -2981,24 +2994,14 @@ int8_t fill_queEntry_sInfo_with_another(struct queue_entry *q,
   ptr->trace_mem = q_same_info->trace_mem;
   ptr->retire_windows = q_same_info->retire_windows;
   ptr->retire_cfg = q_same_info->retire_cfg;
-  g_filter_info.add_q_entry(loc, ptr);
   return 1;
 }
 
-/* update queEntry scheduel info!*/
-int8_t fill_queEntry_sInfo(struct queue_entry *q,
-                           struct cfg_info_token *cfg_tInfo_token) {
+/* REMOVE: update queEntry scheduel info!*/
+int8_t update_queEntry_sInfo(struct queue_entry *q,
+                             struct cfg_info_token *cfg_tInfo_token) {
   int64_t loc = -1;
-  if (q->sch_number == UINT32_MAX) {
-    loc = g_filter_info.q_entry_info_map.size();
-    q->sch_number = loc;
-  } else {
-    fprintf(stderr, "[ERROR] There is already a number for q!\n");
-    exit(100);
-  }
-  if (loc == -1)
-    return 0;
-  auto ptr = init_que_entry(q, loc);
+  auto ptr = search_g_qEntry_info(q);
   /* add windows!*/
   for (const auto &item : g_single_time_info.single_wCks) {
     ptr->add_w_cks(item);
@@ -3012,7 +3015,6 @@ int8_t fill_queEntry_sInfo(struct queue_entry *q,
     ptr->add_c_cks({cfg_tInfo_token->cksums[i], 2});
   }
   ptr->cfg_size = ptr->cfg_cks.size();
-  g_filter_info.add_q_entry(loc, ptr);
   return 1;
 }
 
@@ -3052,17 +3054,6 @@ void put_cfg_token_toG(struct cfg_info_token *cfg_token) {
 
 void push_finish_cfg_toG(struct cfg_info_token *cfg_token) {
   g_single_time_info.cfg_finish = cfg_token;
-}
-
-void search_q_entry_cpp(size_t number) {
-  if (!g_filter_info.q_entry_info_map.count(number)) {
-    fprintf(stderr, "[ERROR] ");
-    exit(100);
-  }
-}
-
-std::shared_ptr<Que_entry_cpp> search_g_qEntry_info(struct queue_entry *q) {
-  return g_filter_info.search_qEntry_info(q->sch_number);
 }
 
 int8_t update_q_window(struct queue_entry *q) {
@@ -3333,7 +3324,7 @@ u32 get_target_splicing_limit() {
   return res;
 }
 
-std::tuple<size_t, size_t, size_t> comaper_two_q_info(struct queue_entry *q1,
+std::tuple<size_t, size_t, size_t> compare_two_q_info(struct queue_entry *q1,
                                                       struct queue_entry *q2) {
   if (q1 == q2)
     return {-1, -1, -1};
@@ -3362,7 +3353,7 @@ int64_t get_score_splicing(struct queue_entry *q1, struct queue_entry *q2,
   if (q1 == q2)
     return -1;
   size_t number_t, number_c, number_w;
-  std::tie(number_t, number_w, number_c) = comaper_two_q_info(q1, q2);
+  std::tie(number_t, number_w, number_c) = compare_two_q_info(q1, q2);
   return r_t * number_t + r_cfg * number_c + r_w * number_w;
   return 1;
 }

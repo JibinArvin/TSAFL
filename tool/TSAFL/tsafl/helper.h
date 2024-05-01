@@ -38,7 +38,6 @@ struct queue_entry {
   struct queue_entry *next, /* Next element, if any             */
       *next_100;            /* 100 elements ahead               */
   /* JIBIN add. */
-  u32 sch_number;
   u32 sch_interesting;
   u8 schedule_var_be; /* Work as before schedule?       */
   u64 exec_time;      /* Time has been fuzzing iterate. */
@@ -129,7 +128,6 @@ void build_g_filter(int64_t number);
 void build_action_info(const struct variable_array *v_array);
 void build_g_filter_ctc();
 void helper_free_scheduel_result_list(struct scheduel_result_list *space);
-u8 have_new_concurrent_per(struct Thread_info *t_info);
 struct thread_need_care *get_t_n_c(struct Thread_info *t_info,
                                    struct single_t_info *s_t);
 struct single_t_info *get_s_t(struct Thread_info *t_info);
@@ -153,8 +151,6 @@ int8_t if_good_plan_now(size_t number);
 void finish_one_plan_success(size_t number, struct Thread_info *t_info,
                              size_t kp_size, struct thread_need_care *t_care);
 void finish_one_scheduel_run(struct cfg_info_token *cfg_token);
-int8_t fill_queEntry_sInfo(struct queue_entry *q,
-                           struct cfg_info_token *cfg_tInfo_token);
 int8_t store_info_preSchedule(struct Thread_info *t_info);
 int8_t check_after_schedule(struct Thread_info *t_info);
 struct cfg_info_token *generate_cfg_token(struct thread_info_scheduel_token *t);
@@ -162,7 +158,6 @@ struct cfg_info_token *
 generate_finished_cfg(struct thread_info_scheduel_token *t);
 void put_cfg_token_toG(struct cfg_info_token *cfg_token);
 void push_finish_cfg_toG(struct cfg_info_token *cfg_token);
-void search_q_entry_cpp(size_t number);
 int8_t update_q_cfg(struct queue_entry *q);
 int8_t update_q_window(struct queue_entry *q);
 int8_t insert_q_info_set(struct queue_entry *q,
@@ -180,8 +175,15 @@ float calculate_score_factor_sch(struct queue_entry *q);
 u32 get_target_splicing_limit();
 int64_t get_splicing_targets(u32 targets_size, struct queue_entry **targets);
 void fill_que_sch_exeInfo(struct Thread_info *t_info, struct queue_entry *q);
-int8_t fill_queEntry_sInfo_with_another(struct queue_entry *q,
-                                        struct queue_entry *another);
+u8 have_new_concurrent_per(struct queue_entry *q);
+void add_to_queEntry_sInfo_map(struct queue_entry *q);
+void update_new_scheQ_to_map(struct queue_entry *q_in,
+                             struct Thread_info *t_info);
+struct queue_entry *get_same_sch_exe_q(struct queue_entry *q_in);
+int8_t update_queEntry_sInfo(struct queue_entry *q,
+                             struct cfg_info_token *cfg_tInfo_token);
+int8_t update_queEntry_sInfo_with_another(struct queue_entry *q,
+                                          struct queue_entry *another);
 int8_t set_queueEntry_interesting_WandC();
 #ifdef __cplusplus
 }
