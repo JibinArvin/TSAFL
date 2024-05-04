@@ -163,41 +163,27 @@ class Que_entry_cpp {
 public:
   struct queue_entry *q_entry_ptr;
   bool meaningful;
-  size_t windows_size;
-  size_t cfg_size;
+  std::vector<bool> aflTraceMem;
   cks_set windows_cks;
-  cks_set retire_windows;
   cks_set cfg_cks;
-  cks_set retire_cfg;
-  std::set<CK_SUM> trace_mem;
+
   Que_entry_cpp()
       : q_entry_ptr(nullptr), meaningful(false), windows_cks({}), cfg_cks({}),
-        windows_size(0), cfg_size(0){};
+        aflTraceMem(std::vector<bool>(MAP_SIZE + 1, false)){};
+
   size_t get_wSet_size() { return windows_cks.size(); };
   size_t get_cSet_size() { return cfg_cks.size(); };
   void add_w_cks(ck_size a) { windows_cks.insert(a); };
   void add_c_cks(ck_size a) { cfg_cks.insert(a); };
-  void add_trace(ck_size a) { trace_mem.insert(a.first); };
-  void retire_w(ck_size a);
-  void retire_c(ck_size a);
-  void finish_c(ck_size a);
+  void add_afl_trace(u8 *trace_bits);
 };
 
-void Que_entry_cpp::finish_c(ck_size a) {
-  cfg_cks.erase(a);
-  cfg_size--;
-}
-
-void Que_entry_cpp::retire_w(ck_size a) {
-  windows_cks.erase(a);
-  windows_size--;
-  retire_windows.insert(a);
-}
-
-void Que_entry_cpp::retire_c(ck_size a) {
-  cfg_cks.erase(a);
-  cfg_size--;
-  retire_cfg.insert(a);
+void Que_entry_cpp::add_afl_trace(u8 *trace_bits) {
+  for (u32 i = 0; i < MAP_SIZE; i++) {
+    if (trace_bits[i]) {
+      aflTraceMem[i] = true;
+    }
+  }
 }
 
 std::shared_ptr<Que_entry_cpp> init_que_entry(struct queue_entry *q_entry_ptr) {
@@ -211,35 +197,42 @@ static std::shared_ptr<Que_entry_cpp> useless_que_entry_cpp =
     std::shared_ptr<Que_entry_cpp>();
 
 using Cks_to_qEntryPtrN = std::map<ck_size, size_t>;
-using Cks_to_qEntryPtr = std::map<ck_size, struct queue_entry *>;
-using Cks32_to_qEntryPtr =
-    std::map<std::pair<CK_SUM_32, size_t>, struct queue_entry *>;
-using Cks_to_setQEntryPtr =
-    std::map<std::pair<CK_SUM, size_t>, std::set<struct queue_entry *>>;
-
+using Ck_to_qEntryPtrN = std::map<CK_SUM, size_t>;
+using Cks32_to_qEntryPtr = std::map<ck_size, struct queue_entry *>;
+using Cks_to_setQEntryPtr = std::map<ck_size, std::set<struct queue_entry *>>;
 using Ck_to_setQEntryPtr = std::map<CK_SUM, std::set<struct queue_entry *>>;
 
 class FilterInfo {
 public:
-  std::unordered_map<size_t, CK_SUM> count_to_ckSum;
+  std::map<std::pair<u32, u32>, struct queue_entry *>
+      qEntryPtrMap; /* Use exec_cksum & count to trace queue_entry.*/
+  std::unordered_map<size_t, CK_SUM>
+      count_to_ckSum; /* Each concurrent has it's cksum. */
   std::map<std::pair<CK_SUM, size_t>, size_t> ck_sum_map;
   WindowSearchMap close_map;
-  std::map<std::pair<CK_SUM_32, size_t>, std::shared_ptr<Que_entry_cpp>>
+  std::map<ck_size, std::shared_ptr<Que_entry_cpp>>
       conCkSumMap; /* Just like virgin bits.*/
   std::map<struct queue_entry *, std::shared_ptr<Que_entry_cpp>>
       q_entry_info_map;
-  Cks_to_qEntryPtr cks_q_w;
-  Cks_to_qEntryPtr cks_q_c;
-  Cks32_to_qEntryPtr exesum_q;
-  Cks_to_setQEntryPtr q_w_mem; /* Use to remmeber how many seed shared one ck.*/
-  Ck_to_setQEntryPtr q_t_mem;
-  Ck_to_setQEntryPtr q_c_mem;
-  std::set<CK_SUM> finish_cfg;
+  Cks32_to_qEntryPtr cks_q_w;
+  Cks32_to_qEntryPtr cks_q_c;
+  Cks_to_qEntryPtrN
+      q_w_mem; /* Use to remmeber how times this cks of w fuzzed.*/
+  u_int64_t qWTimes;
+  std::vector<u_int64_t>
+      q_t_mem; /* Use to remmeber how times this cks of t fuzzed.*/
+  u_int64_t qTTimes;
+  Cks_to_qEntryPtrN
+      q_c_mem; /* Use to remmeber how times this cks of cfg fuzzed.*/
+  u_int64_t qCTimes;
+  std::set<CK_SUM> finish_cfg; /* Use to stored the finished cfg.*/
   u64 exe_times;
   FilterInfo()
-      : count_to_ckSum({}), ck_sum_map({}), close_map({}), conCkSumMap({}),
-        q_entry_info_map({}), cks_q_w({}), cks_q_c({}), exesum_q({}),
-        exe_times(0), q_w_mem({}), q_c_mem({}), q_t_mem({}) {}
+      : qEntryPtrMap({}), count_to_ckSum({}), ck_sum_map({}), close_map({}),
+        conCkSumMap({}), q_entry_info_map({}), cks_q_w({}), cks_q_c({}),
+        exe_times(0), q_w_mem({}), q_c_mem({}),
+        q_t_mem(std::vector<u_int64_t>(MAP_SIZE + 1, 0)), qCTimes(0),
+        qTTimes(0), qWTimes(0) {}
   inline CK_SUM get_cksum(size_t n);
   bool is_interesting_ckSum(CK_SUM ck_sum_in, size_t offset);
   void add_count_to_ckSum(size_t a, CK_SUM b) { count_to_ckSum.insert({a, b}); }
@@ -293,7 +286,7 @@ public:
 
   CK_SUM get_ck_sum_by_two_131(ACTION_NUMBER a, ACTION_NUMBER b);
 
-  std::shared_ptr<Que_entry_cpp> search_qEntry_info(struct queue_entry *q);
+  std::shared_ptr<Que_entry_cpp> getQEntryInfo(struct queue_entry *q);
 
   struct queue_entry *search_q_by_w(ck_size cks);
 
@@ -307,30 +300,72 @@ public:
 
   void set_c_cks(struct queue_entry *q, ck_size ck);
 
-  bool is_there_exeQueEntry(u32 ck_sum, u32 count);
-
-  int8_t add_q_exe_times(u32 ck_sum, u32 count);
-
-  int8_t add_q_exe(u32 ck_sum, u32 count, struct queue_entry *q);
-
-  int8_t add_q_toT(CK_SUM ck_sum, u32 count, struct queue_entry *q);
-
-  int8_t remove_q_fromT(CK_SUM ck_sum, u32 count, struct queue_entry *q);
-
-  int8_t add_q_toC(CK_SUM ck_sum, u32 count, struct queue_entry *q);
-
-  int8_t remove_q_fromC(CK_SUM ck_sum, u32 count, struct queue_entry *q);
-
-  int8_t add_q_toW(CK_SUM ck_sum, u32 count, struct queue_entry *q);
-
-  int8_t remove_q_fromW(CK_SUM ck_sum, u32 count, struct queue_entry *q);
-
   int8_t cfg_finish(CK_SUM ck_sum, u32 count);
 
   int8_t find_finished_cfg(CK_SUM ck_sum, u32 count);
 
   size_t get_size_c_cks(ck_size ck);
+
+  void initTraceCountValue(std::shared_ptr<Que_entry_cpp> &qEntry);
+
+  void PlusTraceCountValue(std::shared_ptr<Que_entry_cpp> &qEntry);
+
+  void addqEntryPtrMap(u32 exec_cksum, u32 count, struct queue_entry *q);
+
+  struct queue_entry *getQPtrByExeCkSUMCount(u32 exec_cksum, u32 count);
+
+  void addExeWholeTimes() {
+    qTTimes++;
+    qCTimes++;
+    qWTimes++;
+  }
+
+  void addQCFGTimes(ck_size ck);
+
+  void addWindowTimes(ck_size ck);
 };
+
+void FilterInfo::addQCFGTimes(ck_size ck) {
+  if (q_c_mem.find(ck) == q_c_mem.end()) {
+    fprintf(stderr, "[Error] helper.cc addQCFGTimes search no exit ck.\n");
+    q_c_mem.insert({ck, 0});
+  }
+  q_c_mem[ck]++;
+}
+
+void FilterInfo::addWindowTimes(ck_size ck) {
+  if (q_w_mem.find(ck) == q_w_mem.end()) {
+    fprintf(stderr, "[Error] helper.cc addQCFGTimes search no exit ck.\n");
+    q_w_mem.insert({ck, 0});
+  }
+  q_w_mem[ck]++;
+}
+
+struct queue_entry *FilterInfo::getQPtrByExeCkSUMCount(u32 exec_cksum,
+                                                       u32 count) {
+  if (qEntryPtrMap.find({exec_cksum, count}) == qEntryPtrMap.end())
+    return nullptr;
+  return qEntryPtrMap[{exec_cksum, count}];
+}
+
+void FilterInfo::addqEntryPtrMap(u32 exec_cksum, u32 count,
+                                 struct queue_entry *q) {
+  if (qEntryPtrMap.find({exec_cksum, count}) != qEntryPtrMap.end()) {
+    return;
+  }
+  qEntryPtrMap[{exec_cksum, count}] = q;
+}
+
+void FilterInfo::initTraceCountValue(std::shared_ptr<Que_entry_cpp> &qEntry) {
+  for (const auto &ck : qEntry->windows_cks) {
+    if (q_w_mem.find(ck) == q_w_mem.end())
+      q_w_mem.insert({ck, 0});
+  }
+  for (const auto &ck : qEntry->cfg_cks) {
+    if (q_c_mem.find(ck) == q_c_mem.end())
+      q_c_mem.insert({ck, 0});
+  }
+}
 
 CK_SUM FilterInfo::get_cksum(size_t n) {
   if (count_to_ckSum.find(n) == count_to_ckSum.end())
@@ -343,114 +378,19 @@ int8_t FilterInfo::find_finished_cfg(CK_SUM ck_sum, u32 count) {
   return finish_cfg.find(ck_sum) != finish_cfg.end();
 }
 
-int8_t FilterInfo::add_q_toT(CK_SUM ck_sum, u32 count, struct queue_entry *q) {
-  if (q_t_mem.find(ck_sum) == q_t_mem.end()) {
-    q_t_mem[ck_sum] = {};
-  }
-  q_t_mem[ck_sum].insert(q);
-  return 1;
-}
-
-int8_t FilterInfo::remove_q_fromT(CK_SUM ck_sum, u32 count,
-                                  struct queue_entry *q) {
-  if (q_t_mem.find(ck_sum) == q_t_mem.end()) {
-    fprintf(stderr, "[ERROR] Using no-exist ck_sum for q_t_mem!\n");
-    return 0;
-  }
-  q_t_mem[ck_sum].erase(q);
-  return 1;
-}
-
-int8_t FilterInfo::add_q_toC(CK_SUM ck_sum, u32 count, struct queue_entry *q) {
-  if (q_c_mem.find(ck_sum) == q_c_mem.end()) {
-    q_c_mem[ck_sum] = {};
-  }
-  q_c_mem[ck_sum].insert(q);
-  return 1;
-}
-
-int8_t FilterInfo::remove_q_fromC(CK_SUM ck_sum, u32 count,
-                                  struct queue_entry *q) {
-  if (q_c_mem.find(ck_sum) == q_c_mem.end()) {
-    fprintf(stderr, "[ERROR] Using no-exist ck_sum for q_c_mem!\n");
-    return 0;
-  }
-  q_c_mem[ck_sum].erase(q);
-  return 1;
-}
-
-int8_t FilterInfo::add_q_toW(CK_SUM ck_sum, u32 count, struct queue_entry *q) {
-  if (q_w_mem.find({ck_sum, count}) == q_w_mem.end()) {
-    q_w_mem[{ck_sum, count}] = {};
-  }
-  q_w_mem[{ck_sum, count}].insert(q);
-  return 1;
-}
-
-int8_t FilterInfo::remove_q_fromW(CK_SUM ck_sum, u32 count,
-                                  struct queue_entry *q) {
-  if (q_w_mem.find({ck_sum, count}) == q_w_mem.end()) {
-    fprintf(stderr, "[ERROR] Using no-exist ck_sum for q_w_mem!\n");
-    return 0;
-  }
-  q_w_mem[{ck_sum, count}].erase(q);
-  return 1;
-}
-
 int8_t FilterInfo::cfg_finish(CK_SUM ck, u32 count) {
-  if (find_finished_cfg(ck, count) && q_c_mem.find(ck) != q_c_mem.end()) {
+  if (find_finished_cfg(ck, count) && q_c_mem.find({ck, 2}) != q_c_mem.end()) {
     fprintf(stderr, "[ERROR] same time exist in finished and un-finished?\n");
     exit(100);
   }
   /* This is set for the same testFile in dry_run. */
-  if (q_c_mem.find(ck) == q_c_mem.end()) {
-    WARNF("Cfg_finish: Using no-exist ck_sum for q_c_mem!\n");
-    finish_cfg.insert(ck);
-    return 0;
+  if (q_c_mem.find({ck, 2}) != q_c_mem.end()) {
+    q_c_mem.erase({ck, 2});
   }
-  for (auto &q : q_c_mem[ck]) {
-    auto q_info = search_qEntry_info(q);
-    if (q_info == nullptr) {
-      fprintf(stderr, "[ERROR] helper.cc: func: cfg_finish "
-                      "shoule not be here.\n");
-      exit(2);
-    }
-    if (!q_info->meaningful) {
-      fprintf(stderr, "[ERROR] Using meaningless q_entry_cpp!\n");
-      return 0;
-    }
-    q_info->finish_c({ck, 2});
+  if (cks_q_c.find({ck, 2}) != cks_q_c.end()) {
+    cks_q_c.erase({ck, 2});
   }
-  q_c_mem.erase(ck);
-  cks_q_c.erase({ck, 2});
   finish_cfg.insert(ck);
-  return 1;
-}
-
-int8_t FilterInfo::add_q_exe(u32 ck_sum, u32 count, struct queue_entry *q) {
-  if (exesum_q.find({ck_sum, count}) != exesum_q.end()) {
-    FATAL(
-        "You are realy inserting a existing entry node! This is meaningless!");
-  }
-  exesum_q[{ck_sum, count}] = q;
-  return 1;
-}
-
-bool FilterInfo::is_there_exeQueEntry(u32 ck_sum, u32 count) {
-  return exesum_q.find({ck_sum, count}) != exesum_q.end();
-}
-
-int8_t FilterInfo::add_q_exe_times(u32 ck_sum, u32 count) {
-  ck_size init = {ck_sum, count};
-  if (exesum_q.find(init) == exesum_q.end()) {
-    fprintf(stderr, "[ERROR] Can't find the queue_entry looking for!\n");
-#ifdef DEBUG
-    exit(100);
-#endif
-    return 0;
-  }
-  if (exesum_q[init]->exec_time < UINT64_MAX)
-    exesum_q[init]->exec_time++;
   return 1;
 }
 
@@ -464,7 +404,7 @@ void FilterInfo::set_w_cks(struct queue_entry *q, ck_size ck) {
 
 /* Return 1 means find successfully.*/
 bool FilterInfo::find_q_by_w(ck_size cks) {
-  return cks_q_w.find(cks) != cks_q_w.end();
+  return cks_q_w.find(cks) != cks_q_w.end() ? true : false;
 }
 
 /* Return 1 means find successfully.*/
@@ -495,7 +435,7 @@ struct queue_entry *FilterInfo::search_q_by_c(ck_size cks) {
 }
 
 std::shared_ptr<Que_entry_cpp>
-FilterInfo::search_qEntry_info(struct queue_entry *q) {
+FilterInfo::getQEntryInfo(struct queue_entry *q) {
   if (q_entry_info_map.find(q) == q_entry_info_map.end()) {
     fprintf(stderr, "[ERROR] Out of range!\n");
     return nullptr;
@@ -562,7 +502,6 @@ void FilterInfo::clear() {
   q_entry_info_map.clear();
   cks_q_w.clear();
   cks_q_c.clear();
-  exesum_q.clear();
   q_w_mem.clear();
   q_c_mem.clear();
   q_t_mem.clear();
@@ -1695,7 +1634,25 @@ void create_que(std::vector<SingleThread> &st_que,
   }
 }
 
-} // namespace
+std::tuple<size_t, size_t> compare_two_q_info(struct queue_entry *q1,
+                                              struct queue_entry *q2) {
+  if (q1 == q2)
+    return {-1, -1};
+  auto q1_info = g_filter_info.getQEntryInfo(q2);
+  auto q2_info = g_filter_info.getQEntryInfo(q2);
+  size_t number_c = 0;
+  for (const auto &item : q1_info->cfg_cks) {
+    if (q2_info->cfg_cks.count(item) == 0)
+      number_c++;
+  }
+  size_t number_w = 0;
+  for (const auto &item : q1_info->windows_cks) {
+    if (q2_info->windows_cks.count(item) == 0)
+      number_w++;
+  }
+  return {number_w, number_c};
+}
+} // End namespace
 
 namespace HELPER__CC_TEST {
 
@@ -2536,7 +2493,7 @@ struct queue_entry *get_same_sch_exe_q(struct queue_entry *q_in) {
 void update_new_scheQ_to_map(struct queue_entry *q_in,
                              struct Thread_info *t_info) {
   g_filter_info.addQPtrToConMap({q_in->sch_exec_cksum, q_in->sch_exec_size},
-                                g_filter_info.search_qEntry_info(q_in));
+                                g_filter_info.getQEntryInfo(q_in));
 }
 
 /* Generate the single_t_info for once time. */
@@ -2954,9 +2911,9 @@ int8_t store_info_preSchedule(struct Thread_info *t_info) {
 }
 
 std::shared_ptr<Que_entry_cpp> search_g_qEntry_info(struct queue_entry *q) {
-  auto res = g_filter_info.search_qEntry_info(q);
+  auto res = g_filter_info.getQEntryInfo(q);
   if (res == nullptr) {
-    fprintf(stderr, "[ERROR] helper.cc: func: cfg_finish "
+    fprintf(stderr, "[ERROR] helper.cc: func: search_g_qEntry_info "
                     "shoule not be here.\n");
     exit(2);
   }
@@ -2971,7 +2928,7 @@ void add_to_queEntry_sInfo_map(struct queue_entry *q) {
 /* REMOVE: Init the same queEntry */
 int8_t update_queEntry_sInfo_with_another(struct queue_entry *q,
                                           struct queue_entry *another) {
-  auto q_same_info = g_filter_info.search_qEntry_info(another);
+  auto q_same_info = g_filter_info.getQEntryInfo(another);
   if (q_same_info == nullptr) {
     fprintf(stderr, "[ERROR] helper.cc: func:fill_queEntry_sInfo_with_another "
                     "shoule not be here.\n");
@@ -2988,16 +2945,11 @@ int8_t update_queEntry_sInfo_with_another(struct queue_entry *q,
   ptr->q_entry_ptr = q;
   ptr->meaningful = q_same_info->meaningful;
   ptr->windows_cks = q_same_info->windows_cks;
-  ptr->cfg_size = q_same_info->cfg_size;
-  ptr->windows_size = q_same_info->windows_size;
   ptr->cfg_cks = q_same_info->cfg_cks;
-  ptr->trace_mem = q_same_info->trace_mem;
-  ptr->retire_windows = q_same_info->retire_windows;
-  ptr->retire_cfg = q_same_info->retire_cfg;
   return 1;
 }
 
-/* REMOVE: update queEntry scheduel info!*/
+/* Update queEntry scheduel info!*/
 int8_t update_queEntry_sInfo(struct queue_entry *q,
                              struct cfg_info_token *cfg_tInfo_token) {
   int64_t loc = -1;
@@ -3006,7 +2958,6 @@ int8_t update_queEntry_sInfo(struct queue_entry *q,
   for (const auto &item : g_single_time_info.single_wCks) {
     ptr->add_w_cks(item);
   }
-  ptr->windows_size = ptr->windows_cks.size();
   /* add cfg info*/
 
   for (size_t i = 0; i < cfg_tInfo_token->size; i++) {
@@ -3014,11 +2965,9 @@ int8_t update_queEntry_sInfo(struct queue_entry *q,
       continue;
     ptr->add_c_cks({cfg_tInfo_token->cksums[i], 2});
   }
-  ptr->cfg_size = ptr->cfg_cks.size();
   return 1;
 }
 
-/* */
 int8_t is_finished_cfg(u16 ck_sum) {
   return g_filter_info.find_finished_cfg(ck_sum, 2);
 }
@@ -3062,28 +3011,20 @@ int8_t update_q_window(struct queue_entry *q) {
   if (q_info->meaningful == false) {
     fprintf(stderr, "[ERROR] transfer useless q info!\n");
 #ifdef DEBUG
-    exit(100);
+    exit(2);
 #endif
     return 0;
   }
-  std::vector<ck_size> mem;
   for (const auto &item : q_info->windows_cks) {
-    if (g_filter_info.find_q_by_w(item)) {
+    if (g_filter_info.find_q_by_w(item) == true) {
 
       struct queue_entry *here_ptr = g_filter_info.search_q_by_w(item);
       if (fav_factor > here_ptr->exec_us * here_ptr->len) {
-        mem.push_back(item);
+        g_filter_info.set_w_cks(q, item);
         continue;
       }
-
-      auto q_temp_info = search_g_qEntry_info(here_ptr);
-
-      q_temp_info->retire_w(item);
     }
     g_filter_info.set_w_cks(q, item);
-  }
-  for (auto &item : mem) {
-    q_info->retire_w(item);
   }
   return 1;
 }
@@ -3091,30 +3032,22 @@ int8_t update_q_window(struct queue_entry *q) {
 int8_t update_q_cfg(struct queue_entry *q) {
   u64 fav_factor = q->exec_us * q->len;
   auto q_info = search_g_qEntry_info(q);
-  if (q_info->meaningful == false) {
+  if (!q_info->meaningful) {
     fprintf(stderr, "[ERROR] transfer useless q info!\n");
 #ifdef DEBUG
-    exit(100);
+    exit(2);
 #endif
     return 0;
   }
-  std::vector<ck_size> mem;
   for (const auto &ck : q_info->cfg_cks) {
     if (g_filter_info.find_q_by_c(ck)) {
-
       struct queue_entry *here_ptr = g_filter_info.search_q_by_c(ck);
-      if (fav_factor > here_ptr->exec_us * here_ptr->len) {
-        mem.push_back(ck);
+      if (fav_factor < here_ptr->exec_us * here_ptr->len) {
+        g_filter_info.set_c_cks(q, ck);
         continue;
       }
-
-      auto q_tmp = search_g_qEntry_info(here_ptr);
-      q_tmp->retire_c(ck); /* USE retire function! */
     }
     g_filter_info.set_c_cks(q, ck);
-  }
-  for (auto &ck : mem) {
-    q_info->retire_c(ck);
   }
   return 1;
 }
@@ -3128,70 +3061,6 @@ void finish_one_scheduel_run(struct cfg_info_token *cfg_token) {
   g_single_time_info.clear();
 }
 
-/* If not a new que, (JIBIN:) don someting! */
-int8_t update_q_exe_time(u32 ck_sum, u32 count) {
-  if (!g_filter_info.is_there_exeQueEntry(ck_sum, count)) {
-#ifdef DEBUG
-    FATAL("[ERROR] There is no que you looking for! Something happened to "
-          "virgins");
-#endif
-    return 0;
-  }
-  g_filter_info.add_q_exe_times(ck_sum, count);
-  g_filter_info.exe_times += 1;
-  return 1;
-}
-
-/* Init q info in different set! */
-int8_t insert_q_info_set(struct queue_entry *q, u8 *trace_bits) {
-  if (q->sch_interesting == 0 && q->trace_mini == 0)
-    return 0;
-  if (q->have_insert_q_info_cpp == 1) {
-    return 0;
-  }
-  auto q_info = search_g_qEntry_info(q);
-  if (q_info->meaningful == false) {
-    fprintf(stderr, "[ERROR] Use meanless q_info! \n");
-#ifdef DEBUG
-    exit(100);
-#endif
-    return 0;
-  }
-  u32 i;
-  for (i = 0; i < MAP_SIZE; i++) {
-    if (trace_bits[i]) {
-      g_filter_info.add_q_toT(i, 2, q);
-    }
-    q_info->add_trace({i, 2});
-  }
-  for (const auto &item : q_info->cfg_cks) {
-    g_filter_info.add_q_toC(item.first, item.second, q);
-  }
-  for (const auto &item : q_info->retire_cfg) {
-    g_filter_info.add_q_toC(item.first, item.second, q);
-  }
-  for (const auto &item : q_info->windows_cks) {
-    g_filter_info.add_q_toW(item.first, item.second, q);
-  }
-  for (const auto &item : q_info->retire_windows) {
-    g_filter_info.add_q_toW(item.first, item.second, q);
-  }
-  q->have_insert_q_info_cpp = 1;
-  return 1;
-}
-
-int8_t insert_q_exe(u32 ck_sum, u32 count, struct queue_entry *q) {
-  if (g_filter_info.is_there_exeQueEntry(ck_sum, count)) {
-    WARNF("You are inserting a existing entry node!");
-#ifdef DEBUG
-    exit(100);
-#endif
-    return 0;
-  }
-  g_filter_info.add_q_exe(ck_sum, count, q);
-  return 1;
-}
-
 int8_t finish_cfg(u16 ck_sum) { return g_filter_info.cfg_finish(ck_sum, 2); }
 
 /* When we find a q become meaningless the counter in
@@ -3202,40 +3071,19 @@ int8_t minus_one_q(struct queue_entry *q) {
     return 0;
   }
   auto q_info = search_g_qEntry_info(q);
-  if (q_info->meaningful == false) {
-    fprintf(stderr, "[ERROR] Using meaningless q_info in minus_one_q \n");
-    return 0;
-  }
-  for (const auto &item : q_info->cfg_cks) {
-    g_filter_info.remove_q_fromC(item.first, item.second, q);
-  }
-  for (const auto &item : q_info->retire_cfg) {
-    g_filter_info.remove_q_fromC(item.first, item.second, q);
-  }
-  for (const auto &item : q_info->windows_cks) {
-    g_filter_info.remove_q_fromW(item.first, item.second, q);
-  }
-  for (const auto &item : q_info->retire_windows) {
-    g_filter_info.remove_q_fromW(item.first, item.second, q);
-  }
-  for (auto &item : q_info->trace_mem) {
-    g_filter_info.remove_q_fromT(item, 2, q);
-  }
   q_info->meaningful = false;
-
 #ifdef TSAFL_LESS_MEMORY
   q_info = useless_que_entry_cpp;
 #endif
   return 1;
 }
 
-/* WAITING. */
 void after_trim_q(struct queue_entry *q, u8 *trace_bit, int8_t live) {
   if (!live)
     return;
   auto q_info = search_g_qEntry_info(q);
   if (q_info->meaningful == false) {
-    insert_q_info_set(q, trace_bit);
+    q_info->meaningful = true;
   }
   return;
 }
@@ -3267,39 +3115,27 @@ void set_init_cAndW() {
   init_window = g_filter_info.q_w_mem.size();
 }
 
+// Remove the influence of the origin afl trace bits. 2024-05-04 by dongjibin.
 float calculate_score_factor_sch(struct queue_entry *q) {
-  float r_cfg, r_t, r_w = 1.0;
-  float cfg_size = g_filter_info.q_c_mem.size() +
-                   g_filter_info.finish_cfg.size() - init_cfg_number;
-  float t_size = g_filter_info.q_t_mem.size();
+  float r_cfg, r_w = 1.0;
+  float cfg_size = g_filter_info.q_c_mem.size();
   float w_size = g_filter_info.q_w_mem.size();
   r_cfg = w_size / cfg_size * cfg_size;
-  r_t = w_size / t_size * t_size;
   r_w = r_w / w_size;
-  float t_score, w_score, c_score;
+  float w_score, c_score;
   auto q_info = search_g_qEntry_info(q);
   if (!q_info->meaningful) {
-    fprintf(stderr, "[ERROR] Useless q_info in calculate_score_factor_sch. \n");
+    fprintf(stderr, "[ERROR] Useless q_info in calculate_score_factor_sch\n");
     exit(100);
   }
   c_score = 0;
   for (auto item : q_info->cfg_cks) {
-    if (g_filter_info.q_c_mem.count(item.first) == 0) {
+    if (g_filter_info.q_c_mem.count(item) == 0) {
       fprintf(stderr, "[ERROR] find uncoverd ck in cfg_cks\n");
       exit(100);
     }
-    auto size_tmp = g_filter_info.q_c_mem[item.first].size();
+    auto size_tmp = g_filter_info.q_c_mem[item];
     c_score += 1.0f / size_tmp;
-  }
-
-  t_score = 0;
-  for (auto &item : q_info->trace_mem) {
-    if (g_filter_info.q_t_mem.count(item) == 0) {
-      fprintf(stderr, "[ERROR] find uncoverd ck in q_t_mem\n");
-      exit(100);
-    }
-    auto size_tmp = g_filter_info.q_t_mem[item].size();
-    t_score += 1.0f / size_tmp;
   }
 
   w_score = 0;
@@ -3308,10 +3144,10 @@ float calculate_score_factor_sch(struct queue_entry *q) {
       fprintf(stderr, "[ERROR] find uncoverd ck in q_w_mem\n");
       exit(100);
     }
-    auto size_tmp = g_filter_info.q_w_mem[item].size();
+    auto size_tmp = g_filter_info.q_w_mem[item];
     w_score += 1.0f / size_tmp;
   }
-  return t_score * r_t + w_score * r_w + c_score * r_cfg;
+  return w_score * r_w + c_score * r_cfg;
 }
 
 u32 get_target_splicing_limit() {
@@ -3324,51 +3160,25 @@ u32 get_target_splicing_limit() {
   return res;
 }
 
-std::tuple<size_t, size_t, size_t> compare_two_q_info(struct queue_entry *q1,
-                                                      struct queue_entry *q2) {
-  if (q1 == q2)
-    return {-1, -1, -1};
-  auto q1_info = search_g_qEntry_info(q1);
-  auto q2_info = search_g_qEntry_info(q2);
-  size_t number_t = 0;
-  for (const auto &item : q1_info->trace_mem) {
-    if (q2_info->trace_mem.count(item) == 0)
-      number_t++;
-  }
-  size_t number_c = 0;
-  for (const auto &item : q1_info->cfg_cks) {
-    if (q2_info->cfg_cks.count(item) == 0)
-      number_c++;
-  }
-  size_t number_w = 0;
-  for (const auto &item : q1_info->windows_cks) {
-    if (q2_info->windows_cks.count(item) == 0)
-      number_w++;
-  }
-  return {number_t, number_w, number_c};
-}
-
+// Remove the infulence of origin afl trace bits here.
 int64_t get_score_splicing(struct queue_entry *q1, struct queue_entry *q2,
-                           float r_t, float r_w, float r_cfg) {
+                           float r_w, float r_cfg) {
   if (q1 == q2)
     return -1;
-  size_t number_t, number_c, number_w;
-  std::tie(number_t, number_w, number_c) = compare_two_q_info(q1, q2);
-  return r_t * number_t + r_cfg * number_c + r_w * number_w;
-  return 1;
+  size_t number_c, number_w;
+  std::tie(number_w, number_c) = compare_two_q_info(q1, q2);
+  return r_cfg * number_c + r_w * number_w;
 }
 
 using score_quePtr = std::pair<float, struct queue_entry *>;
 
+// pick fuzz_one splicing targets.
 int64_t get_splicing_targets(u32 targets_size, struct queue_entry **targets) {
   u32 final_size;
   float r_cfg, r_t, r_w = 1.0;
-  float cfg_size = g_filter_info.q_c_mem.size() +
-                   g_filter_info.finish_cfg.size() - init_cfg_number;
-  float t_size = g_filter_info.q_t_mem.size();
+  float cfg_size = g_filter_info.q_c_mem.size();
   float w_size = g_filter_info.q_w_mem.size();
   r_cfg = w_size / cfg_size;
-  r_t = w_size / targets_size;
   int counter = 0;
   struct cmpare_pair {
     bool operator()(score_quePtr a, score_quePtr b) {
@@ -3383,7 +3193,7 @@ int64_t get_splicing_targets(u32 targets_size, struct queue_entry **targets) {
       continue;
     }
     score_quePtr ptr;
-    ptr.first = get_score_splicing(q, queue_cur, r_t, r_w, r_cfg);
+    ptr.first = get_score_splicing(q, queue_cur, r_w, r_cfg);
     ptr.second = q;
     if (counter < final_size) {
       com.push(ptr);
@@ -3418,4 +3228,48 @@ void fill_que_sch_exeInfo(struct Thread_info *t_info, struct queue_entry *q) {
   auto res = get_concurHash_from_tInfo(t_info);
   q->sch_exec_cksum = res.first;
   q->sch_exec_size = res.second;
+}
+
+void update_q_exe_time(struct queue_entry *q) {
+  auto qEntryPtr = g_filter_info.getQEntryInfo(q);
+  if (qEntryPtr == nullptr) {
+    fprintf(stderr, "[Error] helper.cc: update_q_exe_time can't get qInfo.\n");
+    return;
+  }
+  g_filter_info.addExeWholeTimes();
+  // for (u32 i = 0; i < qEntryPtr->aflTraceMem.size(); i++) {
+  //   if (qEntryPtr->aflTraceMem[i] == true)
+  //     g_filter_info.q_t_mem[i] += 1;
+  // }
+  for (const auto &ck : qEntryPtr->windows_cks) {
+    g_filter_info.addWindowTimes(ck);
+  }
+  for (const auto &ck : qEntryPtr->cfg_cks) {
+    g_filter_info.addQCFGTimes(ck);
+  }
+}
+
+void add_qPtr_with_execksum_count(struct queue_entry *q, u32 exec_cksum,
+                                  u32 count) {
+  g_filter_info.addqEntryPtrMap(exec_cksum, count, q);
+}
+
+void init_q_infos(struct queue_entry *q) {
+  auto qInfo = g_filter_info.getQEntryInfo(q);
+  if (qInfo != nullptr) {
+    g_filter_info.initTraceCountValue(qInfo);
+    return;
+  }
+  fprintf(stderr, "[ERROR] helper.cc: The q u search is not in vector.\n");
+  exit(2);
+}
+
+void fill_aflTraceMap(struct queue_entry *q, u8 *trace_bits) {
+  auto qInfo = g_filter_info.getQEntryInfo(q);
+  if (qInfo != nullptr) {
+    qInfo->add_afl_trace(trace_bits);
+    return;
+  }
+  fprintf(stderr, "[ERROR] helper.cc: The q u search is not in vector.\n");
+  exit(2);
 }

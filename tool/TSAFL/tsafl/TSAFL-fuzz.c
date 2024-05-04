@@ -2778,6 +2778,8 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
     }
     u32 trace_counter = count_bytes(trace_bits);
     cksum = hash32(trace_bits, MAP_SIZE, HASH_CONST);
+    add_qPtr_with_execksum_count(q, cksum, trace_counter);
+
     fill_que_sch_exeInfo(t_info, q);
     if (new_window != 1)
       new_window = have_new_concurrent_per(q);
@@ -2836,6 +2838,9 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
     if (q_same != NULL) {
       q->schedule_var_be = q_same->schedule_var_be;
       update_queEntry_sInfo_with_another(q, q_same);
+      /* update w and cfg map!*/
+      update_q_cfg(q);
+      update_q_window(q);
     } else {
       new_window = 1;
       TSF("Can't find seed with same concurrent feature!");
@@ -2867,7 +2872,9 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
 
     update_queEntry_sInfo(q, cfg_token);
     update_new_scheQ_to_map(q, t_info);
-
+    /* update w and cfg map!*/
+    update_q_cfg(q);
+    update_q_window(q);
     finish_one_scheduel_run(cfg_token_finished);
     free(s_i_t_cfg);
     free(tInfo_token);
@@ -2885,20 +2892,14 @@ static u8 calibrate_case(char **argv, struct queue_entry *q, u8 *use_mem,
   total_bitmap_entries++;
 
   update_bitmap_score(q);
-  /* update w and cfg map!*/
-  update_q_cfg(q);
-  update_q_window(q);
-  /* Insert q into map. */
-  insert_q_exe(q->exec_cksum, q->bitmap_size, q);
-  /* Insert q to g_filter_info.q_c_mem ... !*/
-  insert_q_info_set(q, trace_bits);
+  fill_aflTraceMap(q, trace_bits);
+  init_q_infos(q);
   /* If this case didn't result in new output from the instrumentation, tell
      parent. This is a non-critical problem, but something to warn the user
      about. */
 
   if (!dumb_mode && first_run && !fault && !new_bits)
     fault = FAULT_NOBITS;
-  // clean_que(queue);
 
 abort_calibration:
 
@@ -3511,9 +3512,7 @@ static u8 save_if_interesting(char **argv, void *mem, u32 len, u8 fault) {
 
   exec_cksum = hash32(trace_bits, MAP_SIZE, HASH_CONST);
   count = count_bytes(trace_bits);
-  /* Use a map to speed up the update proccess. */
-  /* update_q_exe_time can be  */
-  update_q_exe_time(exec_cksum, count);
+
   if (fault == crash_mode) {
 
     /* Keep only if there are new bits in the map, add to queue for
@@ -3521,8 +3520,7 @@ static u8 save_if_interesting(char **argv, void *mem, u32 len, u8 fault) {
     /* There is no need to check concurrent performance?
     JIBIN: I think so, cause the trace insert way is different. */
     if (!(hnb = has_new_bits(virgin_bits))) {
-
-      ACTF("NOT interesting!");
+      update_q_exe_time(queue_cur);
       if (crash_mode)
         total_crashes++;
       return 0;
@@ -3541,8 +3539,6 @@ static u8 save_if_interesting(char **argv, void *mem, u32 len, u8 fault) {
     /* JIBIN: Add interesting */
     add_to_queue(fn, len, 0);
     queue_top->tr_intersting = 1;
-    /* Wrong here! */
-    // insert_q_exe(exec_cksum, count, queue_top);
 
     if (hnb == 2) {
       queue_top->has_new_cov = 1;
@@ -4388,8 +4384,8 @@ static void show_stats(void) { // NEXT:
 
   /* If we're not on TTY, bail out. */
 
-  if (not_on_tty) /* JIBIN: We use not_on_tty mode! */
-    return;
+  // if (not_on_tty) /* JIBIN: We use not_on_tty mode! */
+  //   return;
 
   /* Compute some mildly useful bitmap stats. */
 
@@ -5246,7 +5242,7 @@ void change_state_enery_byTime() {
     return;
   }
   u64 cur_time = get_cur_time_s();
-  if ((cur_time - start_time) > whole_running_time / 2)
+  if ((cur_time - start_time) > whole_running_time / 12)
     state_energy = 1;
 }
 
@@ -8706,7 +8702,7 @@ int main(int argc, char **argv) {
   show_init_stats();
 
   seek_to = find_start_position();
-#define ONLY_DRY_RUN
+
 #ifdef ONLY_DRY_RUN
   goto stop_fuzzing;
 #endif
@@ -8727,8 +8723,6 @@ int main(int argc, char **argv) {
   update_que_size();
   que_meaningful_size_old = que_meaningful_size;
 
-#define DRY_RUN
-
 #ifdef DRY_RUN
   TSF("There is only dry_run!"
       " If you want real fuzzing proccess, change the config!");
@@ -8742,7 +8736,7 @@ int main(int argc, char **argv) {
     u8 skipped_fuzz;
 
     cull_queue();
-
+    change_state_enery_byTime();
     update_que_size();
 
     target_splice_ok = 0;

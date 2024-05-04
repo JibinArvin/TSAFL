@@ -23,7 +23,7 @@ struct queue_entry {
       var_behavior, /* Variable behavior?               */
       favored,      /* Currently favored?               */
       fs_redundant; /* Marked as redundant in the fs?   */
-  u8 have_insert_q_info_cpp, tr_intersting;
+  u8 tr_intersting;
   u32 bitmap_size, /* Number of bits set in bitmap     */
       exec_cksum,  /* Checksum of the execution trace  */
       fuzz_level;  /* Number of fuzz                   */
@@ -160,10 +160,6 @@ void put_cfg_token_toG(struct cfg_info_token *cfg_token);
 void push_finish_cfg_toG(struct cfg_info_token *cfg_token);
 int8_t update_q_cfg(struct queue_entry *q);
 int8_t update_q_window(struct queue_entry *q);
-int8_t insert_q_info_set(struct queue_entry *q,
-                         u8 *trace_bits); /* update globale score of q. */
-int8_t update_q_exe_time(u32 ck_sum, u32 count);
-int8_t insert_q_exe(u32 ck_sum, u32 count, struct queue_entry *q);
 int8_t finish_cfg(u16 ck_sum);
 int8_t is_finished_cfg(u16 ck_sum);
 int8_t minus_one_q(struct queue_entry *q);
@@ -185,6 +181,11 @@ int8_t update_queEntry_sInfo(struct queue_entry *q,
 int8_t update_queEntry_sInfo_with_another(struct queue_entry *q,
                                           struct queue_entry *another);
 int8_t set_queueEntry_interesting_WandC();
+void fill_aflTraceMap(struct queue_entry *q, u8 *trace_bits);
+void init_q_infos(struct queue_entry *q);
+void add_qPtr_with_execksum_count(struct queue_entry *q, u32 exec_cksum,
+                                  u32 count);
+void update_q_exe_time(struct queue_entry *q);
 #ifdef __cplusplus
 }
 #endif
